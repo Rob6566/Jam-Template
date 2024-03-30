@@ -24,7 +24,7 @@ public class GameManager : MonoBehaviour
     void Start() {
         //Setup cameras
         camera=GameObject.FindWithTag("MainCamera").GetComponent<Camera>();   
-        camera.backgroundColor=Color.white;
+        camera.backgroundColor=Color.gray;
         UIcamera.enabled=false;
         UIcamera.enabled=true;
 
