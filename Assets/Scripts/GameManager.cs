@@ -11,6 +11,7 @@ public class GameManager : MonoBehaviour
     //Managers
     public AudioManager audioManager;
     public HighScoreManager highScoreManager;
+    public CardManager cardManager;
 
     //Camera handling
     Camera camera;
@@ -31,6 +32,7 @@ public class GameManager : MonoBehaviour
         //Link up managers
         audioManager=GameObject.FindWithTag("AudioManager").GetComponent<AudioManager>();   
         highScoreManager=GameObject.FindWithTag("HighScoreManager").GetComponent<HighScoreManager>();   
+        cardManager=GameObject.FindWithTag("CardManager").GetComponent<CardManager>();   
 
         //Play music
         audioManager.fadeInMusic(0, 0, 1f);
