@@ -12,6 +12,7 @@ public class GameManager : MonoBehaviour
     public AudioManager audioManager;
     public HighScoreManager highScoreManager;
     public CardManager cardManager;
+    public GameObject testCard;
 
     //Camera handling
     Camera camera;
@@ -39,6 +40,17 @@ public class GameManager : MonoBehaviour
 
         //Load high scores
         StartCoroutine(highScoreManager.LoadScores());
+    }
+
+    public void setCardGlow(bool useGlow) {
+        Material mat = testCard.GetComponent<Image>().material;
+        if (useGlow) {
+            mat.EnableKeyword("OUTBASE_ON");
+        }
+        else {
+            mat.DisableKeyword("OUTBASE_ON");
+        }
+        
     }
 
 
