@@ -47,6 +47,10 @@ public class HighScoreManager: MonoBehaviour {
     public TMP_InputField playerNameInput;
     public GameObject invalidName;
 
+    public void init() {
+        invalidName.SetActive(false);
+    }
+
     //Saves a high score to server
     public IEnumerator SaveScore(int score) {
             

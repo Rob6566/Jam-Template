@@ -8,8 +8,9 @@ using UnityEngine.UI;
 public class CardSO : ScriptableObject {
     
     [SerializeField]
-    string cardName;
+    public string cardName;
     public CardSuit cardSuit;
     public CardRank cardRank;
     public Sprite sprite;
+    public string cardClass="BasicCard";
 }

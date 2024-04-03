@@ -3,15 +3,19 @@
 
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using System.Collections;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine.UI;
 
-public class GameManager : MonoBehaviour
-{
+public class GameManager : MonoBehaviour {
     //Managers
     public AudioManager audioManager;
     public HighScoreManager highScoreManager;
     public CardManager cardManager;
+    
+    public List<GameObject> canvasses = new List<GameObject>();
+    
     public GameObject testCard;
 
     //Camera handling
@@ -33,6 +37,7 @@ public class GameManager : MonoBehaviour
         //Link up managers
         audioManager=GameObject.FindWithTag("AudioManager").GetComponent<AudioManager>();   
         highScoreManager=GameObject.FindWithTag("HighScoreManager").GetComponent<HighScoreManager>();   
+        highScoreManager.init();
         cardManager=GameObject.FindWithTag("CardManager").GetComponent<CardManager>();   
 
         //Play music
@@ -59,6 +64,18 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        //Add game start stuff here
+        setCanvasStatus("GameCanvas", true);
+        setCanvasStatus("ControlPanelCanvas", true, false);
+    }
+
+    void setCanvasStatus(string canvasTag, bool newState, bool hideOthers=true) {
+        foreach(GameObject thisCanvas in canvasses) {
+            if (thisCanvas.tag==canvasTag) {
+                thisCanvas.SetActive(newState);
+            }
+            else if (hideOthers) {
+                thisCanvas.SetActive(false);
+            }
+        }
     }
 }
