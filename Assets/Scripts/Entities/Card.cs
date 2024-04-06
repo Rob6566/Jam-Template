@@ -26,6 +26,11 @@ public class Card {
     public Sprite sprite;
     public string cardClass="BasicCard";
 
+    Image cardImage;
+
+    public Vector3 targetPosition;
+    public float targetScale;
+
 
     public void init(CardSO newCardSO, GameObject newCardUI) {
         cardSO=newCardSO;
@@ -43,6 +48,16 @@ public class Card {
         UnityEngine.Object.Destroy(cardUI);
     }
 
+    public void setParentAndAnimateToPosition(Transform parent, float timeToMove) {
+        setParent(parent, true);
+
+        //Tell the animation manager
+    }
+
+    public void setParent(Transform parent, bool worldPositionStays=false) {
+        cardUI.transform.SetParent(parent, worldPositionStays);
+    }
+
     /**
     * Deep clones this card and returns it
     * @param cardPrefab    The card prefab used to instantiate the new gameobject
@@ -55,6 +70,7 @@ public class Card {
         Card newCard = (Card)System.Activator.CreateInstance(System.Type.GetType(cardSO.cardClass));
 
         newCard.init(clonedCardSO, cardGameObject);
+        //Probably want to overload init with a "Card" parameter, so we can clone any card modifications
 
         //Attach this card to the prefab, so it can respond to clicks
         //CardEventHandler cardEventHandler = cardGameObject.GetComponentInChildren<CardEventHandler>();
@@ -66,8 +82,8 @@ public class Card {
 
     /***************************** UI *****************************/    
     void assignUIControls() {
-        //TODO - improve these references
-        //currentHPUI=cardUI.transform.GetChild(10).GetComponent<TextMeshProUGUI>();
+        cardImage=cardUI.transform.GetComponent<Image>();
+        cardImage.sprite=sprite;
         cardTransform = cardUI.transform.GetComponent<RectTransform>();
     }
 

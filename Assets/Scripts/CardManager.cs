@@ -15,12 +15,17 @@ public class CardManager : MonoBehaviour {
     public List<CardSO> allCardSO = new List<CardSO>();
     public GameObject cardPrefab;
 
+    public GameObject deckContainer;
+
     List<Card> allCards = new List<Card>();
+    List<Card> deck = new List<Card>();
+    List<Card> discard = new List<Card>();
 
     GameManager gameManager;
 
     public void init(GameManager newGameManager) {
-        gameManager=newGameManager ;
+        gameManager=newGameManager;
+        generateInitialDeck();
     }
 
     public void generateInitialDeck() {
@@ -28,7 +33,9 @@ public class CardManager : MonoBehaviour {
         foreach (CardSO cardSO in allCardSO) {
             Card newCard = createCardFromCardSO(cardSO);
             allCards.Add(newCard);
+            newCard.setParent(deckContainer.transform);
         }
+        ShuffleDeck();
     }
 
     //Creates a card from a cardsO
@@ -45,4 +52,16 @@ public class CardManager : MonoBehaviour {
         return newCard;        
     }
 
+    public void ShuffleDeck() {
+        for (int i = 0; i < deck.Count; i++) {
+            _ShuffleDeckSwapCards(i, UnityEngine.Random.Range(0, deck.Count-1));
+        }
+    }
+    
+    //Helper function for ShuffleLibrary
+    private void _ShuffleDeckSwapCards(int i, int j) {
+        var temp = deck[i];
+        deck[i] = deck[j];
+        deck[j] = temp;
+    }
 }
