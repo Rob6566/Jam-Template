@@ -23,9 +23,14 @@ public class CardManager : MonoBehaviour {
 
     GameManager gameManager;
 
+
+    public GameObject testCard;
+    public GameObject testTargetLocation;
+
     public void init(GameManager newGameManager) {
         gameManager=newGameManager;
         generateInitialDeck();
+        gameManager.animationManager.animateObjectToNewParent(testCard, testTargetLocation, 10f);
     }
 
     public void generateInitialDeck() {
