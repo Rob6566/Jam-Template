@@ -15,4 +15,6 @@ MonoBehaviour:
   cardName: Jack of Clubs
   cardSuit: 2
   cardRank: 10
+  cardScore: 10
   sprite: {fileID: 21300000, guid: 5c6ca71e98a0442e79c947db8183990c, type: 3}
+  cardClass: BasicCard

@@ -15,4 +15,6 @@ MonoBehaviour:
   cardName: Ace of Spades
   cardSuit: 3
   cardRank: 0
+  cardScore: 11
   sprite: {fileID: 21300000, guid: 273f3504b342a46719dfdf9c9378fe63, type: 3}
+  cardClass: BasicCard

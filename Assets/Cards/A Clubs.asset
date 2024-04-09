@@ -15,4 +15,6 @@ MonoBehaviour:
   cardName: Ace of Clubs
   cardSuit: 2
   cardRank: 0
+  cardScore: 11
   sprite: {fileID: 21300000, guid: 39eac620209984fd69e71ad3bde00e8a, type: 3}
+  cardClass: BasicCard

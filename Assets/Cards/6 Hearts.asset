@@ -15,4 +15,6 @@ MonoBehaviour:
   cardName: 6 of Hearts
   cardSuit: 0
   cardRank: 5
+  cardScore: 6
   sprite: {fileID: 21300000, guid: 3fae681701cd14be9b904498d9637304, type: 3}
+  cardClass: BasicCard

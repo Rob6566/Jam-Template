@@ -15,4 +15,6 @@ MonoBehaviour:
   cardName: Jack of Hearts
   cardSuit: 0
   cardRank: 10
+  cardScore: 10
   sprite: {fileID: 21300000, guid: fc9a63454f2db4f93aa5ebacbbafeed7, type: 3}
+  cardClass: BasicCard

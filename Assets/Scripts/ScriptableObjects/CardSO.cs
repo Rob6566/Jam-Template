@@ -11,6 +11,7 @@ public class CardSO : ScriptableObject {
     public string cardName;
     public CardSuit cardSuit;
     public CardRank cardRank;
+    public float cardScore=0f;
     public Sprite sprite;
     public string cardClass="BasicCard";
 }

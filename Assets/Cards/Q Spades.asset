@@ -15,4 +15,6 @@ MonoBehaviour:
   cardName: Queen of Spades
   cardSuit: 3
   cardRank: 11
+  cardScore: 10
   sprite: {fileID: 21300000, guid: e5835fb36542149ffb0d303b974309b7, type: 3}
+  cardClass: BasicCard

@@ -15,4 +15,6 @@ MonoBehaviour:
   cardName: 2 of Spades
   cardSuit: 3
   cardRank: 1
+  cardScore: 2
   sprite: {fileID: 21300000, guid: 1d000438b8c854c3ea7aa0221d961af9, type: 3}
+  cardClass: BasicCard

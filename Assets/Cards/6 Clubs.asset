@@ -15,4 +15,6 @@ MonoBehaviour:
   cardName: 6 of Clubs
   cardSuit: 2
   cardRank: 5
+  cardScore: 6
   sprite: {fileID: 21300000, guid: a66b95dba610d4aa59b52758e95dea37, type: 3}
+  cardClass: BasicCard

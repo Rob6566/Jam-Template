@@ -15,4 +15,6 @@ MonoBehaviour:
   cardName: King of Spades
   cardSuit: 3
   cardRank: 12
+  cardScore: 10
   sprite: {fileID: 21300000, guid: 97c79d62362ff45eba84be931523bebb, type: 3}
+  cardClass: BasicCard

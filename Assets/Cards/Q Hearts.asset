@@ -15,4 +15,6 @@ MonoBehaviour:
   cardName: Queen of Hearts
   cardSuit: 0
   cardRank: 11
+  cardScore: 10
   sprite: {fileID: 21300000, guid: 124b162b74827440388538979586245a, type: 3}
+  cardClass: BasicCard

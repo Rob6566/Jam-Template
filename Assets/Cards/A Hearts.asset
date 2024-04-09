@@ -15,4 +15,6 @@ MonoBehaviour:
   cardName: Ace of Hearts
   cardSuit: 0
   cardRank: 0
+  cardScore: 11
   sprite: {fileID: 21300000, guid: bb2c398aef6d34703b6b9f1b505c9e5f, type: 3}
+  cardClass: BasicCard

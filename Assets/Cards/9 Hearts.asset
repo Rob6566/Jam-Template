@@ -15,4 +15,6 @@ MonoBehaviour:
   cardName: 9 of Hearts
   cardSuit: 0
   cardRank: 8
+  cardScore: 9
   sprite: {fileID: 21300000, guid: 47eb12feda856473182f57068c8e71b1, type: 3}
+  cardClass: BasicCard

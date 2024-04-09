@@ -11,18 +11,16 @@ using TMPro;
 public class Card {
 
     CardSO cardSO;
-
-    protected int turnsUntilFirstAttack=1;
-    public int TurnsUntilFirstAttack {get {return turnsUntilFirstAttack;}  set {turnsUntilFirstAttack=value;}}
     
     //UI
     GameObject cardUI;
-    //TextMeshProUGUI currentHPUI;
+    public GameObject CardUI {get {return cardUI;}}
     RectTransform cardTransform;
 
     public string cardName;
     public CardSuit cardSuit;
     public CardRank cardRank;
+    public float cardScore;
     public Sprite sprite;
     public string cardClass="BasicCard";
 
@@ -38,6 +36,7 @@ public class Card {
         cardName=cardSO.cardName;
         cardSuit=cardSO.cardSuit;
         cardRank=cardSO.cardRank;
+        cardScore=cardSO.cardScore;
         sprite=cardSO.sprite;
         assignUIControls();
     }
@@ -91,5 +90,19 @@ public class Card {
         //Change the ratio of cards, as we designed them too big
         cardTransform.localScale = new Vector3(newRatio, newRatio, newRatio);
         cardTransform.pivot = new Vector2(1,1);
+    }
+
+    //Disables all All-In-One Shader animations on the card
+    public void disableAllShaders() {
+        Material mat = cardImage.material;
+        mat.DisableKeyword("OUTBASE_ON"); //Disable Fire outline
+    }
+
+    //Enables All-In-One Shader animations on the card
+    public void enableShader(CardShader shaderToEnable) {
+        Material mat = cardImage.material;
+        if (shaderToEnable==CardShader.Glow) {
+            mat.EnableKeyword("OUTBASE_ON"); //Fire outline
+        }
     }
 }

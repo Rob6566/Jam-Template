@@ -15,4 +15,6 @@ MonoBehaviour:
   cardName: Joker
   cardSuit: 4
   cardRank: 13
+  cardScore: 20
   sprite: {fileID: 21300000, guid: 474a0e489a51a4690b682661d5eddc20, type: 3}
+  cardClass: BasicCard

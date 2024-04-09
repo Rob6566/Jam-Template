@@ -15,4 +15,6 @@ MonoBehaviour:
   cardName: Jack of Diamonds
   cardSuit: 1
   cardRank: 10
+  cardScore: 10
   sprite: {fileID: 21300000, guid: 4fb2883372d6b480e93a26e01ab554b7, type: 3}
+  cardClass: BasicCard

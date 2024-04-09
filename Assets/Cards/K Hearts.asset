@@ -15,4 +15,6 @@ MonoBehaviour:
   cardName: King of Hearts
   cardSuit: 0
   cardRank: 12
+  cardScore: 10
   sprite: {fileID: 21300000, guid: 719e84ae3f7374472989ed52a37c94e9, type: 3}
+  cardClass: BasicCard

@@ -23,7 +23,7 @@ public class AnimationManager : MonoBehaviour {
         if (animatedObjects.Count>0) {
             List<AnimatedObject> objectsToRemove = new List<AnimatedObject>();
             foreach (AnimatedObject animatedObject in animatedObjects) {
-                animatedObject.timeSpent+=Time.deltaTime;
+                animatedObject.timeSpent+=(Time.deltaTime*gameManager.AnimationSpeed);
                 if (animatedObject.timeSpent>=animatedObject.totalTime) {
                     animatedObject.gameObject.transform.localPosition=animatedObject.targetPosition;
                     animatedObject.gameObject.transform.localScale=animatedObject.endScale;

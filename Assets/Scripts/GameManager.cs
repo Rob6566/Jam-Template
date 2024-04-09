@@ -23,15 +23,46 @@ public class GameManager : MonoBehaviour {
 
     //Camera handling
     Camera camera;
-    public Camera UIcamera;
+    [SerializeField]
+    Camera UIcamera;
 
     //Menu
-    public GameObject menuContainer;
+    [SerializeField]
+    GameObject menuContainer;
 
     private GameState gameState=GameState.between_games;
     private GameState previousGameState=GameState.between_games;
     public GameState GameState {get {return gameState;}}
     private float gameSleepFor=0f;
+
+    //Animation Speed
+    [SerializeField]
+    Scrollbar animationSpeedScrollbar;
+    private float animationSpeed=1f; 
+    public float AnimationSpeed {get {return animationSpeed;}}
+    public void setAnimationSpeed() {
+        switch (animationSpeedScrollbar.value) {
+        case 1f:
+            animationSpeed=5f;
+            break;
+        case .75f:
+            animationSpeed=2f;
+            break;
+        case .5f:
+            animationSpeed=1f;
+            break;
+        case .25f:
+            animationSpeed=.7f;
+            break;
+        case 0f:
+            animationSpeed=.35f;
+            break;
+        default:
+            animationSpeed=1f;
+            break;
+        }
+    }
+
 
 
     //Auto-runs when game starts
@@ -57,8 +88,10 @@ public class GameManager : MonoBehaviour {
 
         setMenuActive(false);
 
+        setAnimationSpeed();
+
         //Play music
-        audioManager.fadeInMusic(0, 0, 1f);
+        audioManager.initAdaptiveMusic(); //fadeInMusic(0, 0, 1f);
 
         //Load high scores
         StartCoroutine(highScoreManager.LoadScores());
@@ -71,7 +104,7 @@ public class GameManager : MonoBehaviour {
         }
 
         if (gameSleepFor>0) {
-            gameSleepFor-=Time.deltaTime;
+            gameSleepFor-=(Time.deltaTime*animationSpeed);
             return;
         }
 
@@ -101,7 +134,6 @@ public class GameManager : MonoBehaviour {
         else {
             mat.DisableKeyword("OUTBASE_ON");
         }
-        
     }
 
 
@@ -112,6 +144,8 @@ public class GameManager : MonoBehaviour {
 
         setCanvasStatus("GameCanvas", true);
         setCanvasStatus("ControlPanelCanvas", true, false);
+        audioManager.changeMusicMood(MusicMood.bass_and_drums);
+        //audioManager.changeMusicMoodAfterCurrentLoop(MusicMood.bass_drums_and_boopboop);
     }
 
     void setCanvasStatus(string canvasTag, bool newState, bool hideOthers=true) {

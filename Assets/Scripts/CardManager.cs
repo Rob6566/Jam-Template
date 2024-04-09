@@ -9,6 +9,7 @@ using System.Collections.Generic;
 
 public enum CardSuit {hearts, diamonds, clubs, spades, all};
 public enum CardRank {A, two, three, four, five, six, seven, eight, nine, ten, J, Q, K, Joker};
+public enum CardShader {Glow};
 
 public class CardManager : MonoBehaviour {
 
@@ -30,7 +31,9 @@ public class CardManager : MonoBehaviour {
     public void init(GameManager newGameManager) {
         gameManager=newGameManager;
         generateInitialDeck();
-        gameManager.animationManager.animateObjectToNewParent(testCard, testTargetLocation, 10f);
+
+        //TESTING
+        gameManager.animationManager.animateObjectToNewParent(testCard, testTargetLocation, 30f);
     }
 
     public void generateInitialDeck() {
@@ -38,7 +41,11 @@ public class CardManager : MonoBehaviour {
         foreach (CardSO cardSO in allCardSO) {
             Card newCard = createCardFromCardSO(cardSO);
             allCards.Add(newCard);
-            newCard.setParent(deckContainer.transform);
+            //gameManager.animationManager.animateObjectToNewParent(newCard.CardUI, deckContainer, 10f);
+            //newCard.setParent(deckContainer.transform);
+
+            //TESTING FIRE ANIMATION
+            newCard.disableAllShaders();
         }
         ShuffleDeck();
     }
@@ -52,7 +59,7 @@ public class CardManager : MonoBehaviour {
 
         newCard.init(clonedCardSO, cardGameObject);
 
-        Debug.Log("Init card "+newCard.cardName);
+        //Debug.Log("Init card "+newCard.cardName);
 
         return newCard;        
     }

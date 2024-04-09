@@ -15,4 +15,6 @@ MonoBehaviour:
   cardName: Queen of Clubs
   cardSuit: 2
   cardRank: 11
+  cardScore: 10
   sprite: {fileID: 21300000, guid: 270fa9c6916704573963ded859fc9abe, type: 3}
+  cardClass: BasicCard

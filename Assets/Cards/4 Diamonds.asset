@@ -15,4 +15,6 @@ MonoBehaviour:
   cardName: 4 of Diamonds
   cardSuit: 1
   cardRank: 3
+  cardScore: 4
   sprite: {fileID: 21300000, guid: d6677a4620cf849adb9ebe4f5176ae14, type: 3}
+  cardClass: BasicCard

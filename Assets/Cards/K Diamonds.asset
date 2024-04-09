@@ -15,4 +15,6 @@ MonoBehaviour:
   cardName: King of Diamonds
   cardSuit: 1
   cardRank: 12
+  cardScore: 10
   sprite: {fileID: 21300000, guid: 3417163b2707740c191607ca8804578c, type: 3}
+  cardClass: BasicCard
