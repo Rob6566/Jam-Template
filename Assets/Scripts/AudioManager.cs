@@ -123,8 +123,8 @@ public class AudioManager : MonoBehaviour {
         audioSources[selectedAudioSource].clip = moodAudioClips[musicClipPlaying];
         audioSources[selectedAudioSource].time = 0;
         audioSources[selectedAudioSource].PlayScheduled(nextStartTime);
+        nextLoopTime=nextStartTime+MUSIC_BAR_LENGTH;
         nextStartTime+=MUSIC_BAR_LENGTH*barsInNewTrack;
-        nextLoopTime=MUSIC_BAR_LENGTH+1;
     }
 
 
