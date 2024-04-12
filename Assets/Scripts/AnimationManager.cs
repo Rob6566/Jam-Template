@@ -9,6 +9,9 @@ using System.Collections.Generic;
 
 public class AnimationManager : MonoBehaviour {
 
+    [SerializeField]
+    GameObject animationContainer; //Used to make animated objects appear above everything else. We give them a temporary parent, then switch them back to their desired parent at the end
+
     GameManager gameManager;
     List<AnimatedObject> animatedObjects = new List<AnimatedObject>();
 
@@ -25,13 +28,14 @@ public class AnimationManager : MonoBehaviour {
             foreach (AnimatedObject animatedObject in animatedObjects) {
                 animatedObject.timeSpent+=(Time.deltaTime*gameManager.AnimationSpeed);
                 if (animatedObject.timeSpent>=animatedObject.totalTime) {
-                    animatedObject.gameObject.transform.localPosition=animatedObject.targetPosition;
+                    animatedObject.gameObject.transform.position=animatedObject.targetPosition;
                     animatedObject.gameObject.transform.localScale=animatedObject.endScale;
+                    animatedObject.gameObject.transform.SetParent(animatedObject.targetParent.transform, true);
                     objectsToRemove.Add(animatedObject);
                 }
                 else {
                     float lerpValue = animatedObject.timeSpent/animatedObject.totalTime;
-                    animatedObject.gameObject.transform.localPosition=Vector3.Lerp(animatedObject.initialPosition, animatedObject.targetPosition, lerpValue);
+                    animatedObject.gameObject.transform.position=Vector3.Lerp(animatedObject.initialPosition, animatedObject.targetPosition, lerpValue);
                     animatedObject.gameObject.transform.localScale=Vector3.Lerp(animatedObject.startScale, animatedObject.endScale, lerpValue);
                 }
             }
@@ -41,19 +45,21 @@ public class AnimationManager : MonoBehaviour {
         }
     }
 
-    public void animateObject(GameObject gameObject, Vector3 targetPosition, Vector3 endScale, float totalTime) {
+    public void animateObject(GameObject gameObject, GameObject newParentObject, Vector3 targetPosition, Vector3 endScale, float totalTime) {
         AnimatedObject newAnimatedObject = new AnimatedObject();
         newAnimatedObject.gameObject=gameObject;
+        newAnimatedObject.targetParent=newParentObject;
         newAnimatedObject.initialPosition=gameObject.transform.position;
         newAnimatedObject.targetPosition=targetPosition;
         newAnimatedObject.totalTime=totalTime;
         newAnimatedObject.timeSpent=0f;
         newAnimatedObject.startScale=gameObject.transform.localScale;
         newAnimatedObject.endScale=endScale;
+        gameObject.transform.SetParent(animationContainer.transform, true);
         animatedObjects.Add(newAnimatedObject);
     }
 
-    public void animateObjectToNewParent(GameObject gameObject, GameObject newParent, float totalTime) {
+    public void animateObjectToNewParent(GameObject gameObject, GameObject newParent, float totalTime, float localScaleMultiplier=1f) {
         gameObject.transform.SetParent(newParent.transform, true);
 
         float initialWidth=gameObject.GetComponent<RectTransform>().rect.width;
@@ -61,9 +67,17 @@ public class AnimationManager : MonoBehaviour {
         float newWidth=newParent.GetComponent<RectTransform>().rect.width;
         float newHeight=newParent.GetComponent<RectTransform>().rect.height;
 
-        Vector3 newLocalScale = new Vector3(gameObject.GetComponent<RectTransform>().localScale.x * newWidth/initialWidth, gameObject.GetComponent<RectTransform>().localScale.y*newHeight/initialHeight, 1f);
+        Vector3 newLocalScale = new Vector3(gameObject.GetComponent<RectTransform>().localScale.x * localScaleMultiplier * newWidth/initialWidth , gameObject.GetComponent<RectTransform>().localScale.y* localScaleMultiplier *newHeight/initialHeight, 1f);
 
-        animateObject(gameObject, /*newParent.transform.position*/ new Vector3(0f, 0f, 0f), newLocalScale, totalTime);
+        Vector3 newPosition = newParent.transform.position;
+
+        Debug.Log("Moving - initially "+newPosition+" - x:"+(newWidth/2f)+" y:"+(-newHeight/2f));
+
+        newPosition.x+=(newWidth/4f);
+        newPosition.y-=(newHeight/4f);
+
+
+        animateObject(gameObject, newParent, newPosition/*new Vector3(0f, 0f, 0f)*/, newLocalScale, totalTime);
     }
 
     public bool isAnimating() {
@@ -75,6 +89,7 @@ public class AnimationManager : MonoBehaviour {
 
 public class AnimatedObject : MonoBehaviour {
     public GameObject gameObject;
+    public GameObject targetParent;
     public Vector3 initialPosition;
     public Vector3 targetPosition;
     public Vector3 startScale;

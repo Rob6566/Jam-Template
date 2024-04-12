@@ -9,4 +9,5 @@ public class MusicSet : ScriptableObject {
     public List<AudioClip> tracks;
     public MusicMood musicMood;
     public int loopsInTrack;
+    public GameSound gameSound;
 }

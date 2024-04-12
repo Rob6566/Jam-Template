@@ -11,6 +11,8 @@ using TMPro;
 public class Card {
 
     CardSO cardSO;
+
+    GameManager gameManager;
     
     //UI
     GameObject cardUI;
@@ -24,13 +26,16 @@ public class Card {
     public Sprite sprite;
     public string cardClass="BasicCard";
 
+    CardZone cardZone;
+    public CardZone CardZone {get {return cardZone;}}
+
     Image cardImage;
 
-    public Vector3 targetPosition;
-    public float targetScale;
+    List<BonusEffect> bonusEffects = new List<BonusEffect>();
 
 
-    public void init(CardSO newCardSO, GameObject newCardUI) {
+    public void init(GameManager newGameManager, CardSO newCardSO, GameObject newCardUI) {
+        gameManager=newGameManager;
         cardSO=newCardSO;
         cardUI=newCardUI;
         cardName=cardSO.cardName;
@@ -41,16 +46,20 @@ public class Card {
         assignUIControls();
     }
 
+    public void setZone(CardZone newZone) {
+        cardZone=newZone;
+        if (cardZone==CardZone.deck) {
+            setCardImage(gameManager.cardManager.cardBackSprite);
+        }
+        else {
+            setCardImage(sprite);
+        }
+    }
+
     public void Destroy() {
         //UnityEngine.Object.Destroy(currentHPUI);
         UnityEngine.Object.Destroy(cardSO);
         UnityEngine.Object.Destroy(cardUI);
-    }
-
-    public void setParentAndAnimateToPosition(Transform parent, float timeToMove) {
-        setParent(parent, true);
-
-        //Tell the animation manager
     }
 
     public void setParent(Transform parent, bool worldPositionStays=false) {
@@ -68,7 +77,7 @@ public class Card {
 
         Card newCard = (Card)System.Activator.CreateInstance(System.Type.GetType(cardSO.cardClass));
 
-        newCard.init(clonedCardSO, cardGameObject);
+        newCard.init(gameManager, clonedCardSO, cardGameObject);
         //Probably want to overload init with a "Card" parameter, so we can clone any card modifications
 
         //Attach this card to the prefab, so it can respond to clicks
@@ -81,9 +90,13 @@ public class Card {
 
     /***************************** UI *****************************/    
     void assignUIControls() {
-        cardImage=cardUI.transform.GetComponent<Image>();
-        cardImage.sprite=sprite;
+        setCardImage(sprite);
         cardTransform = cardUI.transform.GetComponent<RectTransform>();
+    }
+
+    void setCardImage(Sprite newSprite) {
+        cardImage=cardUI.transform.GetComponent<Image>();
+        cardImage.sprite=newSprite;
     }
 
     public void shrinkToRatio(float newRatio) {

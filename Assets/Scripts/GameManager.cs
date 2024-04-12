@@ -85,7 +85,6 @@ public class GameManager : MonoBehaviour {
         cardManager.init(this);
 
         setCanvasStatus("SplashCanvas", true);
-        setCanvasStatus("ControlPanelCanvas", true, false);
 
         setMenuActive(false);
 
@@ -145,13 +144,17 @@ public class GameManager : MonoBehaviour {
 
         setCanvasStatus("GameCanvas", true);
         setCanvasStatus("ControlPanelCanvas", true, false);
-        audioManager.changeMusicMood(MusicMood.bass_and_drums);
+        //audioManager.changeMusicMood(MusicMood.bass_and_drums);
+        audioManager.changeMusicMood(MusicMood.slow_just_bass);
         //audioManager.changeMusicMoodAfterCurrentLoop(MusicMood.bass_drums_and_boopboop);
     }
 
     void setCanvasStatus(string canvasTag, bool newState, bool hideOthers=true) {
         foreach(GameObject thisCanvas in canvasses) {
-            if (thisCanvas.tag==canvasTag) {
+            if (thisCanvas.tag=="ControlPanelCanvas") {
+                thisCanvas.SetActive(true);
+            }
+            else if (thisCanvas.tag==canvasTag) {
                 thisCanvas.SetActive(newState);
             }
             else if (hideOthers) {

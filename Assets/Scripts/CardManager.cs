@@ -10,13 +10,23 @@ using System.Collections.Generic;
 public enum CardSuit {hearts, diamonds, clubs, spades, all};
 public enum CardRank {A, two, three, four, five, six, seven, eight, nine, ten, J, Q, K, Joker};
 public enum CardShader {Glow};
+public enum CardZone {deck, discard, selectable, nextup, hand1, hand2, hand3};
 
 public class CardManager : MonoBehaviour {
+
+    float SMALL_CARD_SIZE=.4f;
 
     public List<CardSO> allCardSO = new List<CardSO>();
     public GameObject cardPrefab;
 
+    public Sprite cardBackSprite;
+
+
     public GameObject deckContainer;
+    public GameObject discardContainer;
+
+    List<Card> currentDraftCards = new List<Card>();
+
 
     List<Card> allCards = new List<Card>();
     List<Card> deck = new List<Card>();
@@ -33,7 +43,7 @@ public class CardManager : MonoBehaviour {
         generateInitialDeck();
 
         //TESTING
-        gameManager.animationManager.animateObjectToNewParent(testCard, testTargetLocation, 30f);
+        gameManager.animationManager.animateObjectToNewParent(testCard, testTargetLocation, 30f, 1.3f);
     }
 
     public void generateInitialDeck() {
@@ -41,8 +51,11 @@ public class CardManager : MonoBehaviour {
         foreach (CardSO cardSO in allCardSO) {
             Card newCard = createCardFromCardSO(cardSO);
             allCards.Add(newCard);
-            //gameManager.animationManager.animateObjectToNewParent(newCard.CardUI, deckContainer, 10f);
-            //newCard.setParent(deckContainer.transform);
+            //gameManager.animationManager.animateObjectToNewParent(newCard.CardUI, deckContainer, .1f);
+            newCard.shrinkToRatio(SMALL_CARD_SIZE);
+            newCard.setParent(deckContainer.transform);
+            newCard.setZone(CardZone.deck);
+            
 
             //TESTING FIRE ANIMATION
             newCard.disableAllShaders();
@@ -57,7 +70,7 @@ public class CardManager : MonoBehaviour {
         Card newCard = (Card)System.Activator.CreateInstance(System.Type.GetType(cardSO.cardClass));        
         GameObject cardGameObject=Instantiate(cardPrefab);
 
-        newCard.init(clonedCardSO, cardGameObject);
+        newCard.init(gameManager, clonedCardSO, cardGameObject);
 
         //Debug.Log("Init card "+newCard.cardName);
 
@@ -76,4 +89,5 @@ public class CardManager : MonoBehaviour {
         deck[i] = deck[j];
         deck[j] = temp;
     }
+
 }

@@ -7,14 +7,16 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public enum MusicMood {none, just_bass, bass_and_drums, bass_drums_and_boopboop};
+public enum MusicMood {none, slow_just_bass, just_bass, bass_and_drums, bass_drums_and_boopboop};
+public enum GameSound {deal, shiffle, flick, score};
 public class AudioManager : MonoBehaviour {
-    [SerializeField] List<AudioClip> sounds;
     [SerializeField] AudioSource sfxAudioSource;
     int playingMusic=-1;
     public Scrollbar musicScrollbar;
     public Scrollbar sfxScrollbar;
-    public List<MusicSet> musicSets;
+    public List<MusicSet> musicSets; //Music
+    public List<MusicSet> sfxSets;   //SFX
+
     public List<AudioSource> audioSources = new List<AudioSource>();
 
     MusicMood moodPlaying = MusicMood.none;
@@ -95,8 +97,14 @@ public class AudioManager : MonoBehaviour {
         StartCoroutine (AudioFade.FadeOut(music[selectedMusic], fadeOutTime));
     }*/
 
-    public void playSound(int selectedSound, float volume) {
-        sfxAudioSource.PlayOneShot(sounds[selectedSound], volume*sfxScrollbar.value);
+    public void playSound(GameSound soundToPlay, float volume) {
+         foreach(MusicSet sfxSet in sfxSets) {
+            if (sfxSet.gameSound==soundToPlay) {
+                //Play a random sound from the sfxSet
+                int selectedSound = Random.Range(0, sfxSet.tracks.Count);
+                sfxAudioSource.PlayOneShot(sfxSet.tracks[selectedSound], volume*sfxScrollbar.value);
+            }
+        }        
     }
 
     public void setMusicVolume() {
