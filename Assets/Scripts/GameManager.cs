@@ -85,6 +85,7 @@ public class GameManager : MonoBehaviour {
         cardManager.init(this);
 
         setCanvasStatus("SplashCanvas", true);
+        setCanvasStatus("ControlPanelCanvas", true, false);
 
         setMenuActive(false);
 
