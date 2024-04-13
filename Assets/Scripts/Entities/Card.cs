@@ -55,6 +55,13 @@ public class Card {
         else {
             setCardImage(sprite);
         }
+
+        if (cardZone==CardZone.selectable || cardZone==CardZone.deck || cardZone==CardZone.discard) {
+            shrinkToRatio(gameManager.cardManager.SMALL_CARD_SIZE);
+        }
+        else {
+            shrinkToRatio(gameManager.cardManager.TINY_CARD_SIZE);
+        }
     }
 
     public void Destroy() {
@@ -103,7 +110,7 @@ public class Card {
     public void shrinkToRatio(float newRatio) {
         //Change the ratio of cards, as we designed them too big
         cardTransform.localScale = new Vector3(newRatio, newRatio, newRatio);
-        cardTransform.pivot = new Vector2(1,1);
+        //cardTransform.pivot = new Vector2(1,1);
     }
 
     //Disables all All-In-One Shader animations on the card

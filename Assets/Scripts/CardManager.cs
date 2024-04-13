@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using TMPro;
 using UnityEngine.UI;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -15,8 +16,9 @@ public enum HandType {high_card, pair, two_pair, three_of_a_kind, straight, flus
 
 public class CardManager : MonoBehaviour {
 
-    float SMALL_CARD_SIZE=.4f;
-    public int NUM_RANKS=13;
+    public float TINY_CARD_SIZE=.3f;
+    public float SMALL_CARD_SIZE=.4f;
+//    public int NUM_RANKS=13;
 
     public List<CardSO> allCardSO = new List<CardSO>();
     public List<HandSO> allHandSO = new List<HandSO>();
@@ -31,25 +33,35 @@ public class CardManager : MonoBehaviour {
     public GameObject dummyDeckContainer;
     public GameObject discardContainer;
     
+    
+    
+
+    public List<GameObject> card1NextUpContainers;
+    public List<GameObject> card2NextUpContainers;
+    public List<GameObject> card3NextUpContainers;
+    public List<GameObject> nextUpBonusContainers;
+
     public List<GameObject> currentDraftContainers = new List<GameObject>();
     public GameObject currentBonusContainer;
-
-    public List<GameObject> card1NextUpContainers;// = new List<GameObject>();
-    public List<GameObject> card2NextUpContainers = new List<GameObject>();
-    public List<GameObject> card3NextUpContainers = new List<GameObject>();
-
-    public List<GameObject> nextUpBonusContainers = new List<GameObject>();
 
     public List<GameObject> hand1Containers = new List<GameObject>();
     public List<GameObject> hand2Containers = new List<GameObject>();
     public List<GameObject> hand3Containers = new List<GameObject>();
 
-    List<Card> currentDraftCards = new List<Card>();
 
+
+    List<Card> currentDraftCards = new List<Card>();
+    List<Card> nextUp1DraftCards = new List<Card>();
+    List<Card> nextUp2DraftCards = new List<Card>();
+    List<Card> nextUp3DraftCards = new List<Card>();
 
     List<Card> allCards = new List<Card>();
     List<Card> deck = new List<Card>();
     List<Card> discard = new List<Card>();
+
+    List<Card> hand1 = new List<Card>();
+    List<Card> hand2 = new List<Card>();
+    List<Card> hand3 = new List<Card>();
 
     GameManager gameManager;
 
@@ -143,7 +155,7 @@ public class CardManager : MonoBehaviour {
         //Check for sets (pair, 3-5 of a kind, 2 pair, full house, )
         HandType setHandType=HandType.high_card;
         int pairs=0; int threeOfAKind=0; int fourOfAKind=0; int fiveOfAKind=0;
-        for(int i=0; i<NUM_RANKS; i++) {
+        for(int i=0; i<Enum.GetNames(typeof(CardRank)).Length; i++) {
             int cardsOfThisType=0;
             foreach (Card card in hand) {
                 if ((int)card.cardRank==i) {
@@ -153,7 +165,7 @@ public class CardManager : MonoBehaviour {
             if (cardsOfThisType==2) {
                 pairs++;
             }
-            else if (cardsOfThisType==3) {
+            else if (cardsOfThisType==3) {https://discussions.unity.com/t/enum-count/78841
                 threeOfAKind++;
             }
             else if (cardsOfThisType==4) {
@@ -214,20 +226,72 @@ public class CardManager : MonoBehaviour {
         foreach(GameObject draftContainer in currentDraftContainers) {
             Card thisCard=deck[0];
             thisCard.setZone(CardZone.selectable);
-            thisCard.CardUI.transform.SetParent(gameCanvas.transform);
-            thisCard.CardUI.transform.localPosition=new Vector3(0f+dummyDeckContainer.GetComponent<RectTransform>().rect.width/2, 0f+dummyDeckContainer.GetComponent<RectTransform>().rect.height/2, 0f);
+            thisCard.CardUI.transform.SetParent(dummyDeckContainer.transform);
+            //thisCard.CardUI.transform.localPosition=new Vector3(0f+dummyDeckContainer.GetComponent<RectTransform>().rect.width/2, 0f+dummyDeckContainer.GetComponent<RectTransform>().rect.height/2, 0f);
             deck.Remove(thisCard);
             currentDraftCards.Add(thisCard);
             //gameManager.animationManager.animateObjectToNewParent(thisCard.CardUI, draftContainer, 30f, .4f);
             thisCard.CardUI.transform.SetParent(draftContainer.transform);
             thisCard.CardUI.transform.localPosition=new Vector3(0f, 0f, 0f);
-
         }
+
+        dealNextUpCards();
+    }
+
+    void dealNextUpCards() {
+        foreach(GameObject draftContainer in card1NextUpContainers) {
+            Card thisCard=drawCard();
+            thisCard.setZone(CardZone.nextup);
+            thisCard.CardUI.transform.SetParent(dummyDeckContainer.transform);
+            //thisCard.CardUI.transform.localPosition=new Vector3(0f+dummyDeckContainer.GetComponent<RectTransform>().rect.width/2, 0f+dummyDeckContainer.GetComponent<RectTransform>().rect.height/2, 0f);
+            nextUp1DraftCards.Add(thisCard);
+            //gameManager.animationManager.animateObjectToNewParent(thisCard.CardUI, draftContainer, 30f, .4f);
+            thisCard.CardUI.transform.SetParent(draftContainer.transform);
+            thisCard.CardUI.transform.localPosition=new Vector3(0f, 0f, 0f);
+        }
+        foreach(GameObject draftContainer in card2NextUpContainers) {
+            Card thisCard=drawCard();
+            thisCard.setZone(CardZone.nextup);
+            thisCard.CardUI.transform.SetParent(dummyDeckContainer.transform);
+            //thisCard.CardUI.transform.localPosition=new Vector3(0f+dummyDeckContainer.GetComponent<RectTransform>().rect.width/2, 0f+dummyDeckContainer.GetComponent<RectTransform>().rect.height/2, 0f);
+            nextUp2DraftCards.Add(thisCard);
+            //gameManager.animationManager.animateObjectToNewParent(thisCard.CardUI, draftContainer, 30f, .4f);
+            thisCard.CardUI.transform.SetParent(draftContainer.transform);
+            thisCard.CardUI.transform.localPosition=new Vector3(0f, 0f, 0f);
+        }
+        foreach(GameObject draftContainer in card3NextUpContainers) {
+            Card thisCard=drawCard();
+            thisCard.setZone(CardZone.nextup);
+            thisCard.CardUI.transform.SetParent(dummyDeckContainer.transform);
+            //thisCard.CardUI.transform.localPosition=new Vector3(0f+dummyDeckContainer.GetComponent<RectTransform>().rect.width/2, 0f+dummyDeckContainer.GetComponent<RectTransform>().rect.height/2, 0f);
+            nextUp3DraftCards.Add(thisCard);
+            //gameManager.animationManager.animateObjectToNewParent(thisCard.CardUI, draftContainer, 30f, .4f);
+            thisCard.CardUI.transform.SetParent(draftContainer.transform);
+            thisCard.CardUI.transform.localPosition=new Vector3(0f, 0f, 0f);
+        }
+    }
+
+    public Card drawCard() {
+        if (deck.Count==0) {
+            shuffleDiscardIntoDeck();
+        }
+        Card thisCard=deck[0];
+        deck.Remove(thisCard);
+        return thisCard;
+    }
+
+    void shuffleDiscardIntoDeck() {
+        foreach (Card card in discard) {
+            card.setZone(CardZone.deck);
+            card.setParent(deckContainer.transform);
+            deck.Add(card);
+        }
+        discard.Clear();
+        ShuffleDeck();
     }
 
     //Hides all containers used for laying stuff out. Called at the start
     public void hideAllContainerImages() {
-        return;
         deckContainer.GetComponent<Image>().enabled=false;
         dummyDeckContainer.GetComponent<Image>().enabled=false;
         discardContainer.GetComponent<Image>().enabled=false;
@@ -271,4 +335,83 @@ public class CardManager : MonoBehaviour {
         }
 
     }
+
+    public void draftCardToHand(int hand, int cardPicked) {
+             Card cardDrafted = currentDraftCards[cardPicked-1];
+             CardZone zoneToMoveTo=(hand==1 ? CardZone.hand1 : (hand==2 ? CardZone.hand2 : CardZone.hand3));
+             List<Card> handToMoveTo=(hand==1 ? hand1 : (hand==2 ? hand2 : hand3));
+             List<GameObject> handContainers=(hand==1 ? hand1Containers : (hand==2 ? hand2Containers : hand3Containers));
+
+             bool completedHand=false;
+
+             foreach(Card thisCard in currentDraftCards) {
+                if (thisCard==cardDrafted) {
+                //Move Drafted card to hand
+                    thisCard.setZone(zoneToMoveTo);
+                    handToMoveTo.Add(thisCard);
+                    if (handToMoveTo.Count==5) {
+                        completedHand=true;
+                    }
+                    thisCard.setParent(handContainers[handToMoveTo.Count-1].transform);
+                    thisCard.CardUI.transform.localPosition=new Vector3(0f, 0f, 0f);
+                } 
+                else {
+                //Move non-Drafted cards to discard
+                    thisCard.setZone(CardZone.discard);
+                    thisCard.CardUI.transform.localPosition=new Vector3(0f, 0f, 0f);
+                    thisCard.setParent(discardContainer.transform);
+                    discard.Add(thisCard);
+                }
+             }
+             currentDraftCards.Clear();
+            
+             
+             for(int i=1; i<=3; i++) {
+                List<Card> nextUpDraftCards=(i==1 ? nextUp1DraftCards : (i==2 ? nextUp2DraftCards : nextUp3DraftCards));
+                List<GameObject> nextUpContainers=(i==1 ? card1NextUpContainers : (i==2 ? card2NextUpContainers : card3NextUpContainers));
+
+                if (i==cardPicked) {
+                    //Move next up cards in group to current cards
+                    int nextCardUpto=0;
+                    foreach(Card thisCard in nextUpDraftCards) {
+                        thisCard.setZone(CardZone.selectable);
+                        thisCard.setParent(currentDraftContainers[nextCardUpto].transform);
+                        thisCard.CardUI.transform.localPosition=new Vector3(0f, 0f, 0f);
+                        currentDraftCards.Add(thisCard);
+                        nextCardUpto++;
+                    }
+                }
+                else {
+                    foreach(Card thisCard in nextUpDraftCards) {
+                        //Move next up cards in other groups to discard
+                        thisCard.setZone(CardZone.discard);
+                        thisCard.CardUI.transform.localPosition=new Vector3(0f, 0f, 0f);
+                        thisCard.setParent(discardContainer.transform);
+                        discard.Add(thisCard);
+                    }
+                }
+             }
+             nextUp1DraftCards.Clear(); nextUp2DraftCards.Clear(); nextUp3DraftCards.Clear();
+
+            if (completedHand) {
+                scoreHand(hand);
+            }
+
+             dealNextUpCards();
+
+
+        }
+
+    void scoreHand(int hand) {
+        List<Card> handToScore=(hand==1 ? hand1 : (hand==2 ? hand2 : hand3));
+        HandType handType=getHandType(handToScore);
+        Debug.Log("Hand type is "+handType);
+    }
+
+
+
+    void checkHand(int hand) {
+
+    }
+
 }

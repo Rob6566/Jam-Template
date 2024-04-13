@@ -3,6 +3,7 @@
 
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -25,6 +26,11 @@ public class GameManager : MonoBehaviour {
     public GameObject nemesis;
     public GameObject speechbubble;
     public TextMeshProUGUI speechText;
+
+    private int score=0;
+    private const int START_HP=100;
+
+    private List<ScoreHolder> scoreHolders = new List<ScoreHolder>();
     
 
     //Camera handling
@@ -160,6 +166,9 @@ public class GameManager : MonoBehaviour {
             return;
         }
 
+        initScore();
+        hp=START_HP;;
+
         setCanvasStatus("GameCanvas", true);
         setCanvasStatus("ControlPanelCanvas", true, false);
         //audioManager.changeMusicMood(MusicMood.bass_and_drums);
@@ -189,4 +198,42 @@ public class GameManager : MonoBehaviour {
         menuContainer.SetActive(active);
         //Might want to pause game
     }
+
+    public void draftCardToHand1(int cardPicked) {
+        cardManager.draftCardToHand(1, cardPicked);
+    }
+    
+    public void draftCardToHand2(int cardPicked) {
+        cardManager.draftCardToHand(2, cardPicked);
+    }
+
+    public void draftCardToHand3(int cardPicked) {
+        cardManager.draftCardToHand(3, cardPicked);
+    }
+
+    void initScore() {
+        score=0;
+        scoreHolders.Clear();
+        for(int i=0; i<Enum.GetNames(typeof(HandType)).Length; i++) {
+            ScoreHolder scoreHolder = new ScoreHolder();
+            scoreHolder.handType=(HandType)i;
+            scoreHolders.Add(scoreHolder);
+        }
+    }
+
+    public void gainScore(int scoreGained, HandType handType, bool monsterKilled) {
+        score+=scoreGained;
+
+        scoreHolders[(int)handType].numberOfTimesScored++;
+        scoreHolders[(int)handType].scoreGainedFromType+=scoreGained;
+        if (monsterKilled) {
+            scoreHolders[(int)handType].monstersKilledWithHandType++;
+        }
+        updateUI();
+    }
+
+    public void updateUI() {
+
+    }
 }
+
