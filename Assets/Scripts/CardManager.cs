@@ -67,6 +67,8 @@ public class CardManager : MonoBehaviour {
 
     GameManager gameManager;
 
+    int mostRecentHandDrafted;
+
 
     public GameObject testCard;
     public GameObject testTargetLocation;
@@ -254,6 +256,10 @@ public class CardManager : MonoBehaviour {
     }
 
     public void dealNextUpCards() {
+        //Tick down enemies
+        gameManager.tickDownEnemies(mostRecentHandDrafted);
+
+
         foreach(GameObject draftContainer in card1NextUpContainers) {
             Card thisCard=drawCard();
             thisCard.setZone(CardZone.nextup);
@@ -290,6 +296,12 @@ public class CardManager : MonoBehaviour {
         if (deck.Count==0) {
             shuffleDiscardIntoDeck();
         }
+
+        if (gameManager.GameState!=GameState.between_games) {
+            //gameManager.audioManager.playSound(GameSound.shuffle, .6f);
+            //Removed - this sound was a bit grating
+        }
+
         Card thisCard=deck[0];
         deck.Remove(thisCard);
         return thisCard;
@@ -352,6 +364,9 @@ public class CardManager : MonoBehaviour {
     }
 
     public void draftCardToHand(int hand, int cardPicked) {
+             gameManager.audioManager.playSound(GameSound.flick, 1f);
+             mostRecentHandDrafted=hand;
+             
              Card cardDrafted = currentDraftCards[cardPicked-1];
              CardZone zoneToMoveTo=(hand==1 ? CardZone.hand1 : (hand==2 ? CardZone.hand2 : CardZone.hand3));
              List<Card> handToMoveTo=(hand==1 ? hand1 : (hand==2 ? hand2 : hand3));

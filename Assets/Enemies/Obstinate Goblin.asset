@@ -9,11 +9,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 80246770e374941fd95090ed221f19d7, type: 3}
-  m_Name: Card Ripple Shuffle
+  m_Script: {fileID: 11500000, guid: 00fd3463800f042e0a27be818335e765, type: 3}
+  m_Name: Obstinate Goblin
   m_EditorClassIdentifier: 
-  tracks:
-  - {fileID: 8300000, guid: 2ec0be520ad5b42d1b3ad10d39a14c2f, type: 3}
-  musicMood: 0
-  loopsInTrack: 0
-  gameSound: 1
+  enemyName: Obstinate Goblin
+  sprite: {fileID: 21300000, guid: 961a81e27ead94ef4ac3dd9ee9b857fa, type: 3}
+  HP: 100
+  turnsUntilAttack: 15
+  difficulty: 1

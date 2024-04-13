@@ -28,6 +28,12 @@ public class GameManager : MonoBehaviour {
     public GameObject enemyPrefab;
 
     public List<GameObject> enemyContainers = new List<GameObject>();
+
+    public List<Enemy> enemies = new List<Enemy>();
+
+    [SerializeField]
+    List<EnemySO> enemySOs;
+
     public GameObject nemesis;
     public GameObject speechbubble;
     public TextMeshProUGUI speechText;
@@ -66,6 +72,7 @@ public class GameManager : MonoBehaviour {
 
     private int score=0;
     private int hp=100;
+    private int turnUpto=0;
     private const int START_HP=100;
     public TextMeshProUGUI scoreText;
     public TextMeshProUGUI hpText;
@@ -184,6 +191,7 @@ public class GameManager : MonoBehaviour {
         switch (scoringAnimation) {
             case ScoringAnimation.about_to_start:
                 nextScoringEvent=true;
+                setDraftButtonsActive(false);
             break;
             
             case ScoringAnimation.fade_in:
@@ -215,7 +223,10 @@ public class GameManager : MonoBehaviour {
                 scoreCardMult.text="";
                 scoreHandPoints.text="";
                 scoreHandMult.text="";
-                if (tempScoreTimeSinceLastEvent>.5f) {nextScoringEvent=true;}
+                if (tempScoreTimeSinceLastEvent>.5f) {
+                    nextScoringEvent=true; 
+                    audioManager.playSound(GameSound.flick, 1f);
+                }
             break;
 
             case ScoringAnimation.card_1_score:
@@ -241,6 +252,9 @@ public class GameManager : MonoBehaviour {
                     scoreCardMult.text=tempScoreCardMult.ToString();
                     nextScoringEvent=true;
                     tempScoreCardsInHand[cardNo].CardUI.transform.localScale=new Vector3(cardManager.SMALL_CARD_SIZE, cardManager.SMALL_CARD_SIZE, cardManager.SMALL_CARD_SIZE);
+                    if (cardNo<4) {
+                        audioManager.playSound(GameSound.deal, 1f);
+                    }
                 }
             break;
 
@@ -305,6 +319,7 @@ public class GameManager : MonoBehaviour {
                 tempScoreTotalPoints=0;
                 tempScoreTotal=0;
                 tempScoreHand=0;
+                setDraftButtonsActive(true);
 
                  
                     /*TODO if (monsterKilled) {
@@ -359,13 +374,14 @@ public class GameManager : MonoBehaviour {
         }
 
         hp=START_HP;
+        turnUpto=0;
         initScore();
         
 
         setCanvasStatus("GameCanvas", true);
         setCanvasStatus("ControlPanelCanvas", true, false);
-        //audioManager.changeMusicMood(MusicMood.bass_and_drums);
-        audioManager.changeMusicMood(MusicMood.slow_just_bass);
+        audioManager.changeMusicMood(MusicMood.bass_and_drums);
+        //audioManager.changeMusicMood(MusicMood.slow_just_bass);
         //audioManager.changeMusicMoodAfterCurrentLoop(MusicMood.bass_drums_and_boopboop);
     }
 
@@ -415,6 +431,12 @@ public class GameManager : MonoBehaviour {
         updateUI();
     }
 
+    public void setDraftButtonsActive(bool active) {
+        foreach(GameObject button in moveCardButtons) {
+            button.GetComponent<Button>().interactable=active;
+        }
+    }
+
     public void scoreHand(int handNo, HandSO handSO, List<Card> cardsInHand) {
 
         gameState=GameState.scoring;
@@ -445,6 +467,69 @@ public class GameManager : MonoBehaviour {
     public void updateUI() {
         scoreText.text="Score: "+score.ToString();
         hpText.text=hp.ToString();
+    }
+
+    //Tick down the counters on enemies. We don't tick down the one in the hand played
+    public void tickDownEnemies(int enemyToExclude) {
+        turnUpto++;
+        spawnEnemies();
+        List<Enemy> enemiesToRemove = new List<Enemy>();
+        foreach (Enemy enemy in enemies) {
+            if (enemy.enemyPosition==enemyToExclude) {
+                continue;
+            }
+            enemy.turnsUntilAttack--;
+            enemy.updateUI();
+            if (enemy.turnsUntilAttack<=0) {
+                //TODO - animate
+                hp-=enemy.HP;
+                updateUI();
+                checkIfLostGame();
+                enemiesToRemove.Add(enemy);
+            }
+        }
+        foreach (Enemy enemyToRemove in enemiesToRemove) {
+            enemies.Remove(enemyToRemove);
+            enemyToRemove.Destroy();
+        }
+    }
+
+    public void spawnEnemies() {
+        if (enemies.Count>2) {
+            return;
+        }
+
+        if (enemies.Count>0 && UnityEngine.Random.Range(0, 100)>30) {
+            return;
+        }
+
+        for (int i=0; i<3; i++) {
+            bool enemyAlreadyThere=false;
+            foreach(Enemy enemy in enemies) {
+                if (enemy.enemyPosition==(i-1)) {
+                    enemyAlreadyThere=true;
+                    break;
+                }
+            }
+            if (!enemyAlreadyThere) {
+                //TODO - scale enemy difficulty
+                GameObject enemyObject = Instantiate(enemyPrefab);
+                enemyObject.transform.SetParent(enemyContainers[i].transform);
+                enemyObject.transform.localPosition=Vector3.zero;
+                enemyObject.transform.localScale=new Vector3(1.4f, 1.4f, 1.4f);
+                EnemySO enemySO = enemySOs[UnityEngine.Random.Range(0, enemySOs.Count)];
+                Enemy enemy = new Enemy();
+                enemy.init(this, enemySO, enemyObject, i);
+                enemies.Add(enemy);
+                break;
+            }
+        }
+        //TODO - boss dude should be sassy
+    }
+
+    //TODO - implement
+    public void checkIfLostGame() {
+        
     }
 }
 
