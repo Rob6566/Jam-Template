@@ -28,6 +28,7 @@ public class GameManager : MonoBehaviour {
     public TextMeshProUGUI speechText;
 
     private int score=0;
+    private int hp=100;
     private const int START_HP=100;
 
     private List<ScoreHolder> scoreHolders = new List<ScoreHolder>();
