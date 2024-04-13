@@ -41,6 +41,8 @@ public class CardManager : MonoBehaviour {
     public List<GameObject> card3NextUpContainers;
     public List<GameObject> nextUpBonusContainers;
 
+    public List<GameObject> handContainers = new List<GameObject>();
+
     public List<GameObject> currentDraftContainers = new List<GameObject>();
     public GameObject currentBonusContainer;
 
@@ -136,11 +138,13 @@ public class CardManager : MonoBehaviour {
         
 
         //Check for straight
-        hand.Sort(sortCardsByValue);
+        List<Card> sortedHand=new List<Card>(hand);
+
+        sortedHand.Sort(sortCardsByValue);
         bool straight=true;
         int cardUpto=0;
-        int previousRank=(int)hand[0].cardRank;
-        foreach (Card card in hand) {
+        int previousRank=(int)sortedHand[0].cardRank;
+        foreach (Card card in sortedHand) {
             cardUpto++;
             if (cardUpto==4 && previousRank==12 && card.cardRank==0) {
                 //Special handling for 10-J-Q-K-A straight
@@ -157,7 +161,7 @@ public class CardManager : MonoBehaviour {
         int pairs=0; int threeOfAKind=0; int fourOfAKind=0; int fiveOfAKind=0;
         for(int i=0; i<Enum.GetNames(typeof(CardRank)).Length; i++) {
             int cardsOfThisType=0;
-            foreach (Card card in hand) {
+            foreach (Card card in sortedHand) {
                 if ((int)card.cardRank==i) {
                     cardsOfThisType++;
                 }
@@ -238,7 +242,18 @@ public class CardManager : MonoBehaviour {
         dealNextUpCards();
     }
 
-    void dealNextUpCards() {
+    public void discardHand(int hand) {
+        List<Card> handToDiscard=(hand==1 ? hand1 : (hand==2 ? hand2 : hand3));
+        foreach(Card thisCard in handToDiscard) {
+            thisCard.setZone(CardZone.discard);
+            thisCard.CardUI.transform.SetParent(discardContainer.transform);
+            thisCard.CardUI.transform.localPosition=new Vector3(0f, 0f, 0f);
+            discard.Add(thisCard);
+        }
+        handToDiscard.Clear();
+    }
+
+    public void dealNextUpCards() {
         foreach(GameObject draftContainer in card1NextUpContainers) {
             Card thisCard=drawCard();
             thisCard.setZone(CardZone.nextup);
@@ -396,16 +411,26 @@ public class CardManager : MonoBehaviour {
             if (completedHand) {
                 scoreHand(hand);
             }
-
-             dealNextUpCards();
-
-
+            else {
+                dealNextUpCards();
+            }
         }
 
     void scoreHand(int hand) {
         List<Card> handToScore=(hand==1 ? hand1 : (hand==2 ? hand2 : hand3));
         HandType handType=getHandType(handToScore);
         Debug.Log("Hand type is "+handType);
+
+        HandSO ourHandSO=null;
+        foreach(HandSO handSO in allHandSO) {
+            if (handSO.handType==handType) {
+                ourHandSO=handSO;
+            }
+        }
+
+        Debug.Log("About to score hand "+hand+": "+handToScore[0].cardName+" "+handToScore[1].cardName+" "+handToScore[2].cardName+" "+handToScore[3].cardName+" "+handToScore[4].cardName);
+
+        gameManager.scoreHand(hand, ourHandSO, handToScore);
     }
 
 

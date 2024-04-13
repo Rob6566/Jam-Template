@@ -23,6 +23,7 @@ public class Card {
     public CardSuit cardSuit;
     public CardRank cardRank;
     public float cardScore;
+    public float cardMult=0;
     public Sprite sprite;
     public string cardClass="BasicCard";
 
