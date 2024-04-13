@@ -21,6 +21,12 @@ public class GameManager : MonoBehaviour {
     
     public GameObject testCard;
 
+    public List<GameObject> enemies = new List<GameObject>();
+    public GameObject nemesis;
+    public GameObject speechbubble;
+    public TextMeshProUGUI speechText;
+    
+
     //Camera handling
     Camera camera;
     [SerializeField]

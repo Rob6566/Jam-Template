@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 80246770e374941fd95090ed221f19d7, type: 3}
+  m_Name: Card Deal
+  m_EditorClassIdentifier: 
+  tracks:
+  - {fileID: 8300000, guid: b3cc70973b0f44606ad4caf002ac0a59, type: 3}
+  - {fileID: 8300000, guid: d2a479934a41e43ae90f2cb1784a314d, type: 3}
+  - {fileID: 8300000, guid: 08ad3db5143414da0960a24e6c95a72c, type: 3}
+  - {fileID: 8300000, guid: d133a7386d64f482492c0dc1e68fe3d7, type: 3}
+  musicMood: 0
+  loopsInTrack: 0
+  gameSound: 0

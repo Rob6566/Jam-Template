@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public enum MusicMood {none, slow_just_bass, just_bass, bass_and_drums, bass_drums_and_boopboop};
-public enum GameSound {deal, shiffle, flick, score};
+public enum GameSound {deal, shuffle, flick, score};
 public class AudioManager : MonoBehaviour {
     [SerializeField] AudioSource sfxAudioSource;
     int playingMusic=-1;
@@ -102,6 +102,7 @@ public class AudioManager : MonoBehaviour {
             if (sfxSet.gameSound==soundToPlay) {
                 //Play a random sound from the sfxSet
                 int selectedSound = Random.Range(0, sfxSet.tracks.Count);
+                Debug.Log("Play sound "+selectedSound+" from set "+sfxSet.gameSound+" with volume "+volume*sfxScrollbar.value);
                 sfxAudioSource.PlayOneShot(sfxSet.tracks[selectedSound], volume*sfxScrollbar.value);
             }
         }        
@@ -171,5 +172,9 @@ public class AudioManager : MonoBehaviour {
             }
         }
         return 0;
+    }
+
+    public void testPlaySound() {
+        playSound(GameSound.shuffle, 1f);
     }
 }

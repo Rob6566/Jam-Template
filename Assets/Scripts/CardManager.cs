@@ -8,15 +8,18 @@ using System.Collections;
 using System.Collections.Generic;
 
 public enum CardSuit {hearts, diamonds, clubs, spades, all};
-public enum CardRank {A, two, three, four, five, six, seven, eight, nine, ten, J, Q, K, Joker};
+public enum CardRank {A, two, three, four, five, six, seven, eight, nine, ten, J, Q, K};
 public enum CardShader {Glow};
 public enum CardZone {deck, discard, selectable, nextup, hand1, hand2, hand3};
+public enum HandType {high_card, pair, two_pair, three_of_a_kind, straight, flush, full_house, four_of_a_kind, straight_flush, five_of_a_kind, full_flush, five_flush};
 
 public class CardManager : MonoBehaviour {
 
     float SMALL_CARD_SIZE=.4f;
+    public int NUM_RANKS=13;
 
     public List<CardSO> allCardSO = new List<CardSO>();
+    public List<HandSO> allHandSO = new List<HandSO>();
     public GameObject cardPrefab;
 
     public Sprite cardBackSprite;
@@ -24,6 +27,19 @@ public class CardManager : MonoBehaviour {
 
     public GameObject deckContainer;
     public GameObject discardContainer;
+    
+    public List<GameObject> currentDraftContainers = new List<GameObject>();
+    public GameObject currentBonusContainer;
+
+    public List<GameObject> card1NextUpContainers = new List<GameObject>();
+    public List<GameObject> card2NextUpContainers = new List<GameObject>();
+    public List<GameObject> card3NextUpContainers = new List<GameObject>();
+
+    public List<GameObject> nextUpBonusContainers = new List<GameObject>();
+
+    public List<GameObject> hand1Containers = new List<GameObject>();
+    public List<GameObject> hand2Containers = new List<GameObject>();
+    public List<GameObject> hand3Containers = new List<GameObject>();
 
     List<Card> currentDraftCards = new List<Card>();
 
@@ -90,4 +106,99 @@ public class CardManager : MonoBehaviour {
         deck[j] = temp;
     }
 
+    private HandType getHandType(List<Card> hand) {
+      
+        //Check for flush
+        bool flush=true;
+        CardSuit suit=hand[0].cardSuit;
+        foreach (Card card in hand) {
+            if (card.cardSuit!=suit) {
+                flush=false;
+                break;
+            }
+        }
+
+        
+
+        //Check for straight
+        hand.Sort(sortCardsByValue);
+        bool straight=true;
+        int cardUpto=0;
+        int previousRank=(int)hand[0].cardRank;
+        foreach (Card card in hand) {
+            cardUpto++;
+            if (cardUpto==4 && previousRank==12 && card.cardRank==0) {
+                //Special handling for 10-J-Q-K-A straight
+            }
+            else if ((int)card.cardRank!=previousRank+1) {
+                straight=false;
+                break;
+            }
+            previousRank=(int)card.cardRank;
+        }
+
+        //Check for sets (pair, 3-5 of a kind, 2 pair, full house, )
+        HandType setHandType=HandType.high_card;
+        int pairs=0; int threeOfAKind=0; int fourOfAKind=0; int fiveOfAKind=0;
+        for(int i=0; i<NUM_RANKS; i++) {
+            int cardsOfThisType=0;
+            foreach (Card card in hand) {
+                if ((int)card.cardRank==i) {
+                    cardsOfThisType++;
+                }
+            }
+            if (cardsOfThisType==2) {
+                pairs++;
+            }
+            else if (cardsOfThisType==3) {
+                threeOfAKind++;
+            }
+            else if (cardsOfThisType==4) {
+                fourOfAKind++;
+            }
+            else if (cardsOfThisType==5) {
+                fiveOfAKind++;
+            }
+        }
+
+        if (flush && fiveOfAKind>0) {
+            return HandType.five_flush;
+        }
+        else if (flush && threeOfAKind>0 && pairs>0) {
+            return HandType.full_flush;
+        }
+        else if (fiveOfAKind>0) {
+            return HandType.five_of_a_kind;
+        }
+        else if (flush && straight) {
+            return HandType.straight_flush;
+        }
+        else if (fourOfAKind>0) {
+            return HandType.four_of_a_kind;
+        }
+        else if (threeOfAKind>0 && pairs>0) {
+            return HandType.full_house;
+        }
+        else if (straight) {
+            return HandType.straight;
+        }
+        else if (flush) {
+            return HandType.flush;
+        }
+        else if (threeOfAKind>0) {
+            return HandType.three_of_a_kind;
+        }
+        else if (pairs>1) {
+            return HandType.two_pair;
+        }
+        else if (pairs>0) {
+            return HandType.pair;
+        }
+
+        return HandType.high_card;
+    }
+
+    public int sortCardsByValue(Card card1, Card card2) {
+        return card1.cardRank.CompareTo(card2.cardRank);
+    }
 }
