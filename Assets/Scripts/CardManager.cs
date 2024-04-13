@@ -24,14 +24,17 @@ public class CardManager : MonoBehaviour {
 
     public Sprite cardBackSprite;
 
+    public GameObject gameCanvas;
+
 
     public GameObject deckContainer;
+    public GameObject dummyDeckContainer;
     public GameObject discardContainer;
     
     public List<GameObject> currentDraftContainers = new List<GameObject>();
     public GameObject currentBonusContainer;
 
-    public List<GameObject> card1NextUpContainers = new List<GameObject>();
+    public List<GameObject> card1NextUpContainers;// = new List<GameObject>();
     public List<GameObject> card2NextUpContainers = new List<GameObject>();
     public List<GameObject> card3NextUpContainers = new List<GameObject>();
 
@@ -59,7 +62,7 @@ public class CardManager : MonoBehaviour {
         generateInitialDeck();
 
         //TESTING
-        gameManager.animationManager.animateObjectToNewParent(testCard, testTargetLocation, 30f, 1.3f);
+        gameManager.animationManager.animateObjectToNewParent(testCard, testTargetLocation, 30f, .4f);
     }
 
     public void generateInitialDeck() {
@@ -71,10 +74,10 @@ public class CardManager : MonoBehaviour {
             newCard.shrinkToRatio(SMALL_CARD_SIZE);
             newCard.setParent(deckContainer.transform);
             newCard.setZone(CardZone.deck);
-            
+            deck.Add(newCard);
 
             //TESTING FIRE ANIMATION
-            newCard.disableAllShaders();
+            //newCard.disableAllShaders();
         }
         ShuffleDeck();
     }
@@ -200,5 +203,72 @@ public class CardManager : MonoBehaviour {
 
     public int sortCardsByValue(Card card1, Card card2) {
         return card1.cardRank.CompareTo(card2.cardRank);
+    }
+
+    public void dealAllCards() {
+        Invoke("dealAllCardsExecute", 1f);
+    }
+    
+    //Animates dealing out all cards when the game starts
+    void dealAllCardsExecute() {
+        foreach(GameObject draftContainer in currentDraftContainers) {
+            Card thisCard=deck[0];
+            thisCard.setZone(CardZone.selectable);
+            thisCard.CardUI.transform.SetParent(gameCanvas.transform);
+            thisCard.CardUI.transform.localPosition=new Vector3(0f+dummyDeckContainer.GetComponent<RectTransform>().rect.width/2, 0f+dummyDeckContainer.GetComponent<RectTransform>().rect.height/2, 0f);
+            deck.Remove(thisCard);
+            currentDraftCards.Add(thisCard);
+            //gameManager.animationManager.animateObjectToNewParent(thisCard.CardUI, draftContainer, 30f, .4f);
+            thisCard.CardUI.transform.SetParent(draftContainer.transform);
+            thisCard.CardUI.transform.localPosition=new Vector3(0f, 0f, 0f);
+
+        }
+    }
+
+    //Hides all containers used for laying stuff out. Called at the start
+    public void hideAllContainerImages() {
+        return;
+        deckContainer.GetComponent<Image>().enabled=false;
+        dummyDeckContainer.GetComponent<Image>().enabled=false;
+        discardContainer.GetComponent<Image>().enabled=false;
+        currentBonusContainer.GetComponent<Image>().enabled=false;
+
+        foreach (GameObject container in currentDraftContainers) {
+            container.GetComponent<Image>().enabled=false;
+            Debug.Log("Hiding container "+container.name);
+        }
+
+        foreach (GameObject container in currentDraftContainers) {
+            container.GetComponent<Image>().enabled=false;
+        }
+
+        foreach (GameObject container in card1NextUpContainers) {
+            container.GetComponent<Image>().enabled=false;
+        }
+
+        foreach (GameObject container in card2NextUpContainers) {
+            container.GetComponent<Image>().enabled=false;
+        }
+
+        foreach (GameObject container in card3NextUpContainers) {
+            container.GetComponent<Image>().enabled=false;
+        }
+
+        foreach (GameObject container in nextUpBonusContainers) {
+            container.GetComponent<Image>().enabled=false;
+        }
+
+        foreach (GameObject container in hand1Containers) {
+            container.GetComponent<Image>().enabled=false;
+        }
+
+        foreach (GameObject container in hand2Containers) {
+            container.GetComponent<Image>().enabled=false;
+        }
+
+        foreach (GameObject container in hand3Containers) {
+            container.GetComponent<Image>().enabled=false;
+        }
+
     }
 }

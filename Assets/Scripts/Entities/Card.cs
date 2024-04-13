@@ -46,6 +46,7 @@ public class Card {
         assignUIControls();
     }
 
+
     public void setZone(CardZone newZone) {
         cardZone=newZone;
         if (cardZone==CardZone.deck) {

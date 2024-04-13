@@ -67,14 +67,15 @@ public class AnimationManager : MonoBehaviour {
         float newWidth=newParent.GetComponent<RectTransform>().rect.width;
         float newHeight=newParent.GetComponent<RectTransform>().rect.height;
 
-        Vector3 newLocalScale = new Vector3(gameObject.GetComponent<RectTransform>().localScale.x * localScaleMultiplier * newWidth/initialWidth , gameObject.GetComponent<RectTransform>().localScale.y* localScaleMultiplier *newHeight/initialHeight, 1f);
+        //Vector3 newLocalScale = new Vector3(gameObject.GetComponent<RectTransform>().localScale.x * localScaleMultiplier * newWidth/initialWidth , gameObject.GetComponent<RectTransform>().localScale.y* localScaleMultiplier *newHeight/initialHeight, 1f);
+        Vector3 newLocalScale = new Vector3(localScaleMultiplier, localScaleMultiplier, localScaleMultiplier);
 
         Vector3 newPosition = newParent.transform.position;
 
-        Debug.Log("Moving - initially "+newPosition+" - x:"+(newWidth/2f)+" y:"+(-newHeight/2f));
+        Debug.Log("Moving "+gameObject.name+"Initial width: "+initialWidth+" Initial height: "+initialHeight+" New width: "+newWidth+" New height: "+newHeight+"newPosition="+newPosition+" newLocalScale="+newLocalScale);
 
-        newPosition.x+=(newWidth/4f);
-        newPosition.y-=(newHeight/4f);
+//        newPosition.x+=(newWidth/4f);
+//        newPosition.y-=(newHeight/4f);
 
 
         animateObject(gameObject, newParent, newPosition/*new Vector3(0f, 0f, 0f)*/, newLocalScale, totalTime);

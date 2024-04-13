@@ -21,7 +21,7 @@ public class GameManager : MonoBehaviour {
     
     public GameObject testCard;
 
-    public List<GameObject> enemies = new List<GameObject>();
+    public List<GameObject> enemyContainers = new List<GameObject>();
     public GameObject nemesis;
     public GameObject speechbubble;
     public TextMeshProUGUI speechText;
@@ -99,6 +99,10 @@ public class GameManager : MonoBehaviour {
         //Play music
         audioManager.initAdaptiveMusic(); //fadeInMusic(0, 0, 1f);
 
+        hideAllContainerImages();
+
+        cardManager.dealAllCards();
+
         //Load high scores
         StartCoroutine(highScoreManager.LoadScores());
     }
@@ -127,6 +131,14 @@ public class GameManager : MonoBehaviour {
         else if (gameState==GameState.paused) {
             gameState=previousGameState;
         }
+    }
+
+    public void hideAllContainerImages() {
+        foreach(GameObject enemy in enemyContainers) {
+            Image enemyImage = enemy.GetComponent<Image>();
+            enemyImage.enabled=false;
+        }
+        cardManager.hideAllContainerImages();
     }
 
 
