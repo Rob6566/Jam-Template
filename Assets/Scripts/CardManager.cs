@@ -148,11 +148,14 @@ public class CardManager : MonoBehaviour {
         int previousRank=(int)sortedHand[0].cardRank;
         foreach (Card card in sortedHand) {
             cardUpto++;
-            if (cardUpto==4 && previousRank==12 && card.cardRank==0) {
+            if (cardUpto==1) {continue;}
+            else if (cardUpto==4 && previousRank==12 && card.cardRank==0) {
                 //Special handling for 10-J-Q-K-A straight
+                Debug.Log("Straight with Ace, card ="+card.cardName+" previousRank="+previousRank);
             }
             else if ((int)card.cardRank!=previousRank+1) {
                 straight=false;
+                Debug.Log("No Straight, card ="+card.cardName+" previousRank="+previousRank);
                 break;
             }
             previousRank=(int)card.cardRank;
@@ -257,7 +260,7 @@ public class CardManager : MonoBehaviour {
 
     public void dealNextUpCards() {
         //Tick down enemies
-        gameManager.tickDownEnemies(mostRecentHandDrafted);
+        gameManager.tickDownEnemies(mostRecentHandDrafted-1);
 
 
         foreach(GameObject draftContainer in card1NextUpContainers) {
@@ -448,10 +451,14 @@ public class CardManager : MonoBehaviour {
         gameManager.scoreHand(hand, ourHandSO, handToScore);
     }
 
-
-
-    void checkHand(int hand) {
-
+    public string getHandTypeName(HandType handType) {
+        foreach(HandSO handSO in allHandSO) {
+            if (handSO.handType==handType) {
+                return handSO.handName;
+            }
+        }
+        return "Unknown Hand Type";
     }
+
 
 }

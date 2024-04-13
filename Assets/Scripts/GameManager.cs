@@ -10,7 +10,7 @@ using TMPro;
 using UnityEngine.UI;
 
 public enum GameState {paused, picking_card, scoring, between_games};
-public enum ScoringAnimation {about_to_start, fade_in, hand_fade_in, labels_fade_in, card_numbers_fade_in, card_1_score, card_2_score, card_3_score, card_4_score, card_5_score, hand_points_fade_in, hand_mult_fade_in, total_points_fade_in, total_x_fade_in, total_mult_fade_in, total_fade_in, fade_out, animate_score};
+public enum ScoringAnimation {about_to_start, fade_in,hand_fade_in, hand_type_fade_in, labels_fade_in, card_numbers_fade_in, card_1_score, card_2_score, card_3_score, card_4_score, card_5_score, hand_points_fade_in, hand_mult_fade_in, total_points_fade_in, total_x_fade_in, total_mult_fade_in, total_fade_in, fade_out, animate_score};
 
 public class GameManager : MonoBehaviour {
     //Managers
@@ -37,8 +37,15 @@ public class GameManager : MonoBehaviour {
     public GameObject nemesis;
     public GameObject speechbubble;
     public TextMeshProUGUI speechText;
+    int hideEnemySpeechInXRounds=0;
+    List<string> nemesisSpeeches = new List<string>{
+        "I'm going to get you!",
+        "You can't hide from me!",
+        "I'm coming for you!",
+        "You're going down!"
+    };
 
-
+    //Scoring Overlay
     public GameObject scoreOverlay;
     public TextMeshProUGUI scoreHandName;
     public TextMeshProUGUI scoreLblPoints;
@@ -53,6 +60,22 @@ public class GameManager : MonoBehaviour {
     public TextMeshProUGUI scoreTotalMult;
     public TextMeshProUGUI scoreLblX;
     public TextMeshProUGUI scoreTotal;
+
+    
+    //End Game Overlay
+    public GameObject endGameFirstOverlay;
+    public GameObject endGameSecondOverlay;
+    public GameObject endGameTXTGameOver;
+    public GameObject endGameTXTScore;
+    public GameObject endGameLBLHandsPlayed;
+    public GameObject endGameTXTHandsPlayed;
+    public GameObject endGameLBLCardsDrafted;
+    public GameObject endGameTXTCardsDrafted;
+    public GameObject endGameLBLEnemiesUnsummoned;
+    public GameObject endGameTXTEnemiesUnsummoned;
+    public GameObject endGameLBLMostPlayedHand;
+    public GameObject endGameTXTMostPlayedHand;
+    public GameObject endGameHomeButton;
 
 
     //Vars used for card scoring animation
@@ -186,14 +209,14 @@ public class GameManager : MonoBehaviour {
         tempScoreTimeSinceLastEvent+=Time.deltaTime*animationSpeed;
         List<GameObject> handObjects;
         Debug.Log("Update scoring yo");
-        //public enum ScoringAnimation {about_to_start, fade_in, hand_fade_in, labels_fade_in, card_numbers_fade_in, card_1_score, card_2_score, card_3_score, card_4_score, card_5_score, hand_points_fade_in, hand_mult_fade_in, total_points_fade_in, total_x_fade_in, total_mult_fade_in, total_fade_in, fade_out, animate_score};
+        //public enum ScoringAnimation {about_to_start, fade_in, hand_type_fade_in, hand_fade_in, labels_fade_in, card_numbers_fade_in, card_1_score, card_2_score, card_3_score, card_4_score, card_5_score, hand_points_fade_in, hand_mult_fade_in, total_points_fade_in, total_x_fade_in, total_mult_fade_in, total_fade_in, fade_out, animate_score};
         bool nextScoringEvent=false;
         switch (scoringAnimation) {
             case ScoringAnimation.about_to_start:
                 nextScoringEvent=true;
                 setDraftButtonsActive(false);
             break;
-            
+
             case ScoringAnimation.fade_in:
                 scoreOverlay.SetActive(true);
                 scoreOverlay.GetComponent<Image>().color=Color.Lerp(Color.clear, Color.black, tempScoreTimeSinceLastEvent/1f);
@@ -208,6 +231,14 @@ public class GameManager : MonoBehaviour {
                     handObject.transform.SetParent(scoreOverlay.transform);
                 }
                 if (tempScoreTimeSinceLastEvent>.5f) {nextScoringEvent=true;}
+            break;
+
+            case ScoringAnimation.hand_type_fade_in:
+                scoreHandName.gameObject.SetActive(true);
+                scoreHandName.GetComponent<CanvasGroup>().alpha=Mathf.Lerp(0f, 1f, tempScoreTimeSinceLastEvent/1f);
+                if (tempScoreTimeSinceLastEvent>1f) {
+                    nextScoringEvent=true;
+                }
             break;
 
             case ScoringAnimation.labels_fade_in:
@@ -225,7 +256,7 @@ public class GameManager : MonoBehaviour {
                 scoreHandMult.text="";
                 if (tempScoreTimeSinceLastEvent>.5f) {
                     nextScoringEvent=true; 
-                    audioManager.playSound(GameSound.flick, 1f);
+                    audioManager.playSound(GameSound.deal, 1f);
                 }
             break;
 
@@ -239,15 +270,10 @@ public class GameManager : MonoBehaviour {
 
                 float currentScale=Mathf.Lerp(cardManager.SMALL_CARD_SIZE, HUGE_ANIMATED_CARD_SIZE, tempScoreTimeSinceLastEvent/.5f);
                 tempScoreCardsInHand[cardNo].CardUI.transform.localScale=new Vector3(currentScale, currentScale, currentScale);
-                //scoreTotalPoints.text="";
-                //scoreTotalMult.text="";
-                //scoreLblX.text="";
-                //scoreTotal.text="";
-                //tempScoreCardsInHand[0].enableShader(CardShader.Glow);
 
                 if(tempScoreTimeSinceLastEvent>.5f) {
-                    tempScoreCardPoints+=(int)tempScoreCardsInHand[0].cardScore;
-                    tempScoreCardMult+=(int)tempScoreCardsInHand[0].cardMult;
+                    tempScoreCardPoints+=(int)tempScoreCardsInHand[cardNo].cardScore;
+                    tempScoreCardMult+=(int)tempScoreCardsInHand[cardNo].cardMult;
                     scoreCardPoints.text=tempScoreCardPoints.ToString();
                     scoreCardMult.text=tempScoreCardMult.ToString();
                     nextScoringEvent=true;
@@ -317,14 +343,35 @@ public class GameManager : MonoBehaviour {
                 tempScoreHandPoints=0;
                 tempScoreHandMult=0;
                 tempScoreTotalPoints=0;
-                tempScoreTotal=0;
-                tempScoreHand=0;
                 setDraftButtonsActive(true);
 
-                 
-                    /*TODO if (monsterKilled) {
-                        scoreHolders[(int)handType].monstersKilledWithHandType++;
-                     }*/
+                List<Enemy> enemiesToRemove = new List<Enemy>();
+                Debug.Log("Will we damage enemies???");
+                foreach (Enemy enemy in enemies) {
+                    if ((enemy.enemyPosition+1)!=tempScoreHand) {
+                        Debug.Log("Skipped damaging enemy in position "+enemy.enemyPosition);
+                        continue;
+                    }
+                    Debug.Log("Damaging enemy PEW in position "+enemy.enemyPosition+" with "+tempScoreTotal+" damage");
+                   enemy.HP-=tempScoreTotal;
+                   enemy.updateUI();
+                   if (enemy.HP>0) {
+                    enemy.animateHP();
+                   }
+                   if (enemy.HP<=0) {
+                      enemiesToRemove.Add(enemy);
+                   }
+                   break;
+                }
+
+                foreach (Enemy enemyToRemove in enemiesToRemove) {
+                    animationManager.animateObjectExpandAndFade(enemyToRemove.EnemyUI, 1f, 5f);
+                    enemies.Remove(enemyToRemove);
+                    enemyToRemove.Destroy();
+                    scoreHolders[(int)tempScoreHandType].monstersKilledWithHandType++;
+                }
+                tempScoreHand=0;
+                tempScoreTotal=0;
                 updateUI();
             break;
         }
@@ -351,6 +398,7 @@ public class GameManager : MonoBehaviour {
             enemyImage.enabled=false;
         }
         scoreOverlay.SetActive(false);
+        endGameFirstOverlay.SetActive(false);
         cardManager.hideAllContainerImages();
     }
 
@@ -376,6 +424,7 @@ public class GameManager : MonoBehaviour {
         hp=START_HP;
         turnUpto=0;
         initScore();
+        speechbubble.SetActive(false);
         
 
         setCanvasStatus("GameCanvas", true);
@@ -449,6 +498,7 @@ public class GameManager : MonoBehaviour {
         tempScoreHandType=handSO.handType;
 
         scoreHandName.text=handSO.handName;
+        scoreHandName.gameObject.SetActive(false);
         scoreLblPoints.text="";
         scoreLblMult.text="";
         scoreLblCards.text="";
@@ -474,12 +524,15 @@ public class GameManager : MonoBehaviour {
         turnUpto++;
         spawnEnemies();
         List<Enemy> enemiesToRemove = new List<Enemy>();
+        Debug.Log("Tick down enemies, excluding "+enemyToExclude);
         foreach (Enemy enemy in enemies) {
             if (enemy.enemyPosition==enemyToExclude) {
+                Debug.Log("Tick down - skipped enemy "+enemy.enemyPosition);
                 continue;
             }
             enemy.turnsUntilAttack--;
             enemy.updateUI();
+            enemy.animateTimer();
             if (enemy.turnsUntilAttack<=0) {
                 //TODO - animate
                 hp-=enemy.HP;
@@ -491,6 +544,20 @@ public class GameManager : MonoBehaviour {
         foreach (Enemy enemyToRemove in enemiesToRemove) {
             enemies.Remove(enemyToRemove);
             enemyToRemove.Destroy();
+        }
+
+
+
+        //Enemy Speech
+        hideEnemySpeechInXRounds--;
+        if (hideEnemySpeechInXRounds<0) {
+            speechbubble.SetActive(false);
+        }
+        else if(hideEnemySpeechInXRounds<-3 && UnityEngine.Random.Range(0, 100)>80) {
+            hideEnemySpeechInXRounds=2;
+            speechbubble.SetActive(true);
+            speechText.text=nemesisSpeeches[UnityEngine.Random.Range(0, nemesisSpeeches.Count)];
+            animationManager.animateObjectExpandAndFade(speechbubble, .5f, 2f);
         }
     }
 
@@ -506,7 +573,7 @@ public class GameManager : MonoBehaviour {
         for (int i=0; i<3; i++) {
             bool enemyAlreadyThere=false;
             foreach(Enemy enemy in enemies) {
-                if (enemy.enemyPosition==(i-1)) {
+                if (enemy.enemyPosition==(i)) {
                     enemyAlreadyThere=true;
                     break;
                 }
@@ -529,7 +596,37 @@ public class GameManager : MonoBehaviour {
 
     //TODO - implement
     public void checkIfLostGame() {
-        
+        if (hp<=0) {
+            gameState=GameState.between_games;
+            endGameFirstOverlay.SetActive(true);
+            endGameTXTScore.GetComponent<TextMeshProUGUI>().text=score+" points";
+            endGameTXTCardsDrafted.GetComponent<TextMeshProUGUI>().text=turnUpto.ToString();
+
+            int enemiesUnsummoned=0;
+            HandType mostPlayedHand=HandType.high_card;
+            int mostPlayedHandCount=0;
+            int handsPlayed=0;
+            foreach(ScoreHolder scoreHolder in scoreHolders) {
+                enemiesUnsummoned+=scoreHolder.monstersKilledWithHandType;
+                handsPlayed+=scoreHolder.numberOfTimesScored;
+                if (scoreHolder.numberOfTimesScored>mostPlayedHandCount) {
+                    mostPlayedHand=scoreHolder.handType;
+                    mostPlayedHandCount=scoreHolder.numberOfTimesScored;
+                }
+            }
+
+            endGameTXTHandsPlayed.GetComponent<TextMeshProUGUI>().text=handsPlayed.ToString();
+            endGameTXTEnemiesUnsummoned.GetComponent<TextMeshProUGUI>().text=enemiesUnsummoned.ToString();
+            endGameTXTMostPlayedHand.GetComponent<TextMeshProUGUI>().text=cardManager.getHandTypeName(mostPlayedHand);
+
+            audioManager.changeMusicMood(MusicMood.slow_just_bass);
+
+            StartCoroutine(highScoreManager.SaveScore(score));
+        }
+    }
+
+    public void clickHome() {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 }
 

@@ -28,15 +28,28 @@ public class AnimationManager : MonoBehaviour {
             foreach (AnimatedObject animatedObject in animatedObjects) {
                 animatedObject.timeSpent+=(Time.deltaTime*gameManager.AnimationSpeed);
                 if (animatedObject.timeSpent>=animatedObject.totalTime) {
-                    animatedObject.gameObject.transform.position=animatedObject.targetPosition;
-                    animatedObject.gameObject.transform.localScale=animatedObject.endScale;
-                    animatedObject.gameObject.transform.SetParent(animatedObject.targetParent.transform, true);
+                    if (animatedObject.expandAndFade) {
+                        UnityEngine.Object.Destroy(animatedObject.gameObject);
+                    }
+                    else {
+                        animatedObject.gameObject.transform.position=animatedObject.targetPosition;
+                        animatedObject.gameObject.transform.localScale=animatedObject.endScale;
+                        animatedObject.gameObject.transform.SetParent(animatedObject.targetParent.transform, true);
+                    }
                     objectsToRemove.Add(animatedObject);
                 }
                 else {
-                    float lerpValue = animatedObject.timeSpent/animatedObject.totalTime;
-                    animatedObject.gameObject.transform.position=Vector3.Lerp(animatedObject.initialPosition, animatedObject.targetPosition, lerpValue);
-                    animatedObject.gameObject.transform.localScale=Vector3.Lerp(animatedObject.startScale, animatedObject.endScale, lerpValue);
+                    if (animatedObject.expandAndFade) {
+                        float lerpValue = animatedObject.timeSpent/animatedObject.totalTime;
+                        animatedObject.gameObject.transform.localScale=Vector3.Lerp(animatedObject.startScale, animatedObject.endScale, lerpValue);
+                        CanvasGroup canvasGroup=animatedObject.gameObject.GetComponent<CanvasGroup>();
+                        canvasGroup.alpha=1f-lerpValue;
+                    }
+                    else {
+                        float lerpValue = animatedObject.timeSpent/animatedObject.totalTime;
+                        animatedObject.gameObject.transform.position=Vector3.Lerp(animatedObject.initialPosition, animatedObject.targetPosition, lerpValue);
+                        animatedObject.gameObject.transform.localScale=Vector3.Lerp(animatedObject.startScale, animatedObject.endScale, lerpValue);
+                    }
                 }
             }
             foreach (AnimatedObject objectToRemove in objectsToRemove) {
@@ -81,6 +94,24 @@ public class AnimationManager : MonoBehaviour {
         animateObject(gameObject, newParent, newPosition/*new Vector3(0f, 0f, 0f)*/, newLocalScale, totalTime);
     }
 
+
+    public void animateObjectExpandAndFade(GameObject gameObject, float totalTime, float expandToScale) {
+        AnimatedObject newAnimatedObject = new AnimatedObject();
+        GameObject clonedGameObject=UnityEngine.Object.Instantiate(gameObject);
+        clonedGameObject.transform.SetParent(gameObject.transform.parent);
+        clonedGameObject.transform.position=gameObject.transform.position;
+        clonedGameObject.transform.localScale=gameObject.transform.localScale;
+        
+        newAnimatedObject.gameObject=clonedGameObject;
+        newAnimatedObject.totalTime=totalTime;
+        newAnimatedObject.timeSpent=0f;
+        newAnimatedObject.expandAndFade=true;
+        newAnimatedObject.startScale=gameObject.transform.localScale;
+        newAnimatedObject.endScale=gameObject.transform.localScale*expandToScale;
+        clonedGameObject.transform.SetParent(animationContainer.transform, true);
+        animatedObjects.Add(newAnimatedObject);
+    }
+
     public bool isAnimating() {
         return animatedObjects.Count>0;
     }
@@ -97,4 +128,5 @@ public class AnimatedObject : MonoBehaviour {
     public Vector3 endScale;
     public float totalTime;
     public float timeSpent;
+    public bool expandAndFade=false;
 }

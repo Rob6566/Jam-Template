@@ -31,6 +31,9 @@ public class Enemy {
     public TextMeshProUGUI TXTturnsUntilAttack;
     public int enemyPosition;
 
+    GameObject hpContainer;
+    GameObject timerContainer;
+
 
     public void init(GameManager newGameManager, EnemySO newEnemySO, GameObject newEnemyUI, int newEnemyPosition) {
         gameManager=newGameManager;
@@ -55,8 +58,10 @@ public class Enemy {
         enemyImage=enemyUI.transform.GetComponent<Image>();
         enemyImage.sprite=sprite;
         enemyTransform = enemyUI.transform.GetComponent<RectTransform>();
-        TXThp = enemyUI.transform.GetChild(1).GetComponent<TextMeshProUGUI>();
-        TXTturnsUntilAttack= enemyUI.transform.GetChild(3).GetComponent<TextMeshProUGUI>();
+        TXThp = enemyUI.transform.GetChild(0).GetChild(0).GetComponent<TextMeshProUGUI>();
+        hpContainer=enemyUI.transform.GetChild(0).gameObject;
+        TXTturnsUntilAttack= enemyUI.transform.GetChild(1).GetChild(0).GetComponent<TextMeshProUGUI>();
+        timerContainer=enemyUI.transform.GetChild(1).gameObject;
 
         updateUI();
     }
@@ -64,5 +69,13 @@ public class Enemy {
     public void updateUI() {
         TXThp.text = HP.ToString();
         TXTturnsUntilAttack.text = turnsUntilAttack.ToString();
+    }
+
+    public void animateHP() {
+        gameManager.animationManager.animateObjectExpandAndFade(hpContainer, .5f, 5f);
+    }
+
+    public void animateTimer() {
+        gameManager.animationManager.animateObjectExpandAndFade(timerContainer, .5f, 5f);
     }
 }

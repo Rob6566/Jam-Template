@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: Straight
   m_EditorClassIdentifier: 
   handName: Straight
-  handType: 7
+  handType: 4
   mult: 4
   score: 30
