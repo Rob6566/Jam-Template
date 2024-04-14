@@ -13,7 +13,8 @@ MonoBehaviour:
   m_Name: increase_card_mult
   m_EditorClassIdentifier: 
   buffName: Increase Card Mult
-  color: {r: 1, g: 0, b: 0, a: 0}
+  color: {r: 0.509434, g: 0.39649343, b: 0.39649343, a: 1}
   buffString: +2 Mult
   sprite: {fileID: 21300000, guid: 1cb15ce95ed914aae965e6adeca96606, type: 3}
   cardEnhancement: 1
+  fontWhite: 1

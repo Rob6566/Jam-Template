@@ -20,14 +20,44 @@ public class Card {
     RectTransform cardTransform;
 
     public string cardName;
-    public CardSuit cardSuit;
+    CardSuit cardSuit;
+    public CardSuit CardSuit {get {
+        foreach (CardBuffSO cardBuff in cardBuffs) {
+            if (cardBuff.cardEnhancement==CardEnhancement.all_suits) {
+                return CardSuit.all;
+            }
+        }
+        return cardSuit;
+    } 
+    set {cardSuit=value;}}
     public CardRank cardRank;
-    public float cardScore;
-    public float cardMult=0;
+    float cardScore;
+    public float CardScore {get {
+        float calculatedScore=cardScore;
+        foreach (CardBuffSO cardBuff in cardBuffs) {
+            if (cardBuff.cardEnhancement==CardEnhancement.increase_score) {
+                calculatedScore+=gameManager.cardManager.CARD_SCORE_BUFF_VALUE;
+            }
+        }
+        return calculatedScore;
+    }}
+
+    float cardMult=0;
+    public float CardMult {get {
+        float calculatedMult=cardMult;
+        foreach (CardBuffSO cardBuff in cardBuffs) {
+            if (cardBuff.cardEnhancement==CardEnhancement.increase_mult) {
+                calculatedMult+=gameManager.cardManager.CARD_MULT_BUFF_VALUE;
+            }
+        }
+        return calculatedMult;    
+    }}
     public Sprite sprite;
     public string cardClass="BasicCard";
 
-    public List<CardBuffSO> cardBuffs = new List<CardBuffSO>();
+    List<CardBuffSO> cardBuffs = new List<CardBuffSO>();
+
+    List<GameObject> bonusEffectUIs = new List<GameObject>();
 
     CardZone cardZone;
     public CardZone CardZone {get {return cardZone;}}
@@ -52,19 +82,7 @@ public class Card {
 
     public void setZone(CardZone newZone) {
         cardZone=newZone;
-        if (cardZone==CardZone.deck) {
-            setCardImage(gameManager.cardManager.cardBackSprite);
-        }
-        else {
-            setCardImage(sprite);
-        }
-
-        if (cardZone==CardZone.selectable || cardZone==CardZone.deck || cardZone==CardZone.discard) {
-            shrinkToRatio(gameManager.cardManager.SMALL_CARD_SIZE);
-        }
-        else {
-            shrinkToRatio(gameManager.cardManager.TINY_CARD_SIZE);
-        }
+        updateUI();
     }
 
     public void Destroy() {
@@ -103,6 +121,11 @@ public class Card {
     void assignUIControls() {
         setCardImage(sprite);
         cardTransform = cardUI.transform.GetComponent<RectTransform>();
+        for(int x=0; x<4; x++) {
+            GameObject bonusEffectUI = cardUI.transform.GetChild(x).gameObject;
+            bonusEffectUIs.Add(bonusEffectUI);
+        }
+        updateUI();
     }
 
     void setCardImage(Sprite newSprite) {
@@ -128,5 +151,65 @@ public class Card {
         if (shaderToEnable==CardShader.Glow) {
             mat.EnableKeyword("OUTBASE_ON"); //Fire outline
         }
+    }
+
+    public void updateUI() {
+        if (cardZone==CardZone.deck) {
+            setCardImage(gameManager.cardManager.cardBackSprite);
+            hideAllBonusEffects();
+        }
+        else {
+            setCardImage(sprite);
+            showBonusEffects();
+        }
+
+        if (cardZone==CardZone.selectable || cardZone==CardZone.deck || cardZone==CardZone.discard || cardZone==CardZone.shop) {
+            shrinkToRatio(gameManager.cardManager.SMALL_CARD_SIZE);
+        }
+        else {
+            shrinkToRatio(gameManager.cardManager.TINY_CARD_SIZE);
+        }      
+    }
+
+    private void showBonusEffects() {
+        hideAllBonusEffects();
+        int x=0;
+        foreach (CardBuffSO cardBuff in cardBuffs) {
+            if (x>3) {
+                break;
+            }
+            bonusEffectUIs[x].SetActive(true);
+            bonusEffectUIs[x].transform.GetChild(0).gameObject.GetComponent<Image>().sprite=cardBuff.sprite;
+            bonusEffectUIs[x].transform.GetChild(1).gameObject.GetComponent<TextMeshProUGUI>().text=cardBuff.buffString;
+            x++;
+        }
+    }
+
+    public void addBuff(CardBuffSO newBuff) {
+        if (cardBuffs.Count>3) {
+            return;
+        }
+        cardBuffs.Add(newBuff);
+        updateUI();
+    }
+
+
+    private void hideAllBonusEffects() {
+        foreach (GameObject bonusEffectUI in bonusEffectUIs) {
+            bonusEffectUI.SetActive(false);
+        }
+    }
+
+    public void modifyRank(int modification) {
+        cardRank+=modification;
+        if ((int)cardRank<0) {
+            cardRank=CardRank.K;
+        }
+        if ((int)cardRank>12) {
+            cardRank=CardRank.A;
+        }
+        gameManager.cardManager.updateCardSprite(this);
+
+        updateUI();
     }
 }

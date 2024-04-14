@@ -12,6 +12,12 @@ TagManager:
   - HighScoreManager
   - CardManager
   - AnimationManager
+  - ShopCardContainer
+  - ShopCardContainer1
+  - ShopCardContainer2
+  - ShopCardContainer3
+  - ShopCardContainer4
+  - ShopCardContainer5
   layers:
   - Default
   - TransparentFX

@@ -12,4 +12,5 @@ public class CardBuffSO : ScriptableObject {
     public string buffString;
     public Sprite sprite;
     public CardEnhancement cardEnhancement;
+    public bool fontWhite;
 }

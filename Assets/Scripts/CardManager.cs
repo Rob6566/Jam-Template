@@ -11,7 +11,7 @@ using System.Collections.Generic;
 public enum CardSuit {hearts, diamonds, clubs, spades, all};
 public enum CardRank {A, two, three, four, five, six, seven, eight, nine, ten, J, Q, K};
 public enum CardShader {Glow};
-public enum CardZone {deck, discard, selectable, nextup, hand1, hand2, hand3};
+public enum CardZone {deck, discard, selectable, nextup, hand1, hand2, hand3, shop};
 public enum HandType {high_card, pair, two_pair, three_of_a_kind, straight, flush, full_house, four_of_a_kind, straight_flush, five_of_a_kind, full_flush, five_flush};
 public enum CardEnhancement {increase_score, increase_mult, all_suits, remove_card, increase_rank, decrease_rank, copy_card};
 
@@ -19,11 +19,16 @@ public class CardManager : MonoBehaviour {
 
     public float TINY_CARD_SIZE=.3f;
     public float SMALL_CARD_SIZE=.4f;
+
+    //Bonuses conferred on cards by enhancements
+    public int CARD_SCORE_BUFF_VALUE=20; 
+    public int CARD_MULT_BUFF_VALUE=2;
+
 //    public int NUM_RANKS=13;
 
     public List<CardSO> allCardSO = new List<CardSO>();
     public List<HandSO> allHandSO = new List<HandSO>();
-    public List<CardEnhancement> allEnhancements = new List<CardEnhancement>();
+    public List<CardBuffSO> allBuffs = new List<CardBuffSO>();
     public GameObject cardPrefab;
 
     public Sprite cardBackSprite;
@@ -131,9 +136,12 @@ public class CardManager : MonoBehaviour {
       
         //Check for flush
         bool flush=true;
-        CardSuit suit=hand[0].cardSuit;
+        CardSuit suit=hand[0].CardSuit;
         foreach (Card card in hand) {
-            if (card.cardSuit!=suit) {
+            if (suit==CardSuit.all) {
+                suit=card.CardSuit;
+            }
+            if (card.CardSuit!=suit && card.CardSuit!=CardSuit.all) {
                 flush=false;
                 break;
             }
@@ -252,12 +260,16 @@ public class CardManager : MonoBehaviour {
     public void discardHand(int hand) {
         List<Card> handToDiscard=(hand==1 ? hand1 : (hand==2 ? hand2 : hand3));
         foreach(Card thisCard in handToDiscard) {
-            thisCard.setZone(CardZone.discard);
-            thisCard.CardUI.transform.SetParent(discardContainer.transform);
-            thisCard.CardUI.transform.localPosition=new Vector3(0f, 0f, 0f);
-            discard.Add(thisCard);
+            discardCard(thisCard);
         }
         handToDiscard.Clear();
+    }
+
+    public void discardCard(Card card) {
+            card.setZone(CardZone.discard);
+            card.CardUI.transform.SetParent(discardContainer.transform);
+            card.CardUI.transform.localPosition=new Vector3(0f, 0f, 0f);
+            discard.Add(card);
     }
 
     public void dealNextUpCards() {
@@ -500,6 +512,19 @@ public class CardManager : MonoBehaviour {
 
     void setContainerTrans(GameObject container, float transparency) {
         container.GetComponent<CanvasGroup>().alpha=transparency;
+    }
+
+    public CardBuffSO getRandomBuff() {
+        return allBuffs[UnityEngine.Random.Range(0, allBuffs.Count-1)];
+    }
+
+    public void updateCardSprite(Card card) {
+        foreach(CardSO cardSO in allCardSO) {
+            if (cardSO.cardRank==card.cardRank && cardSO.cardSuit==card.CardSuit) {
+                card.sprite=cardSO.sprite;
+                card.updateUI();
+            }
+        }
     }
 
 

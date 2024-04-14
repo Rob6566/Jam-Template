@@ -48,6 +48,13 @@ public class GameManager : MonoBehaviour {
         "I saw you pull that ace out of your sleeve."
     };
 
+    List<string> bluortSpeeches = new List<string>{
+        "Smile, you're on camera",
+        "You didn't buy these from me",
+        "These fell off the back of a truck",
+        "Buy 1 get 1 - and that's cutting my own throat",
+    };
+
     //Scoring Overlay
     public GameObject scoreOverlay;
     public TextMeshProUGUI scoreHandName;
@@ -80,6 +87,19 @@ public class GameManager : MonoBehaviour {
     public GameObject endGameTXTMostPlayedHand;
     public GameObject endGameHomeButton;
 
+    //Shop controls
+    public GameObject shopButton;
+    public GameObject shopOverlay;
+    public List<GameObject> shopCardContainers = new List<GameObject>();
+    public List<GameObject> shopBuffContainers = new List<GameObject>();
+    public TextMeshProUGUI shopVouchersTXT;
+    public TextMeshProUGUI shopSpeechTXT;
+    public GameObject shopPurchaseButton;
+    List<Card> cardsInShop = new List<Card>();
+    List<CardBuffSO> buffsInShop = new List<CardBuffSO>();
+
+
+
 
     //Vars used for card scoring animation
     public List<Card> tempScoreCardsInHand;
@@ -97,11 +117,18 @@ public class GameManager : MonoBehaviour {
 
 
     private int score=0;
+    private int nextShopScore=0;
+    private int shopIncrement=0;
+    private int SHOP_INCREMENT_INCREASE=20;
+    private int shopUsesAvailable=0;
     private int hp=100;
     private int turnUpto=0;
     private const int START_HP=100;
     public TextMeshProUGUI scoreText;
     public TextMeshProUGUI hpText;
+    private int shopCardSelected=-1;
+    private int shopBuffSelected=-1;
+
 
     private List<ScoreHolder> scoreHolders = new List<ScoreHolder>();
     
@@ -272,8 +299,8 @@ public class GameManager : MonoBehaviour {
                 tempScoreCardsInHand[cardNo].CardUI.transform.localScale=new Vector3(currentScale, currentScale, currentScale);
 
                 if(tempScoreTimeSinceLastEvent>.5f) {
-                    tempScoreCardPoints+=(int)tempScoreCardsInHand[cardNo].cardScore;
-                    tempScoreCardMult+=(int)tempScoreCardsInHand[cardNo].cardMult;
+                    tempScoreCardPoints+=(int)tempScoreCardsInHand[cardNo].CardScore;
+                    tempScoreCardMult+=(int)tempScoreCardsInHand[cardNo].CardMult;
                     scoreCardPoints.text=tempScoreCardPoints.ToString();
                     scoreCardMult.text=tempScoreCardMult.ToString();
                     nextScoringEvent=true;
@@ -344,6 +371,7 @@ public class GameManager : MonoBehaviour {
                 tempScoreHandMult=0;
                 tempScoreTotalPoints=0;
                 setDraftButtonsActive(true);
+                checkShopVoucherThreshold();
 
                 List<Enemy> enemiesToRemove = new List<Enemy>();
                 foreach (Enemy enemy in enemies) {
@@ -394,6 +422,9 @@ public class GameManager : MonoBehaviour {
             Image enemyImage = enemy.GetComponent<Image>();
             enemyImage.enabled=false;
         }
+        foreach(GameObject cardContainer in shopCardContainers) {
+            cardContainer.GetComponent<Image>().enabled=false;
+        }
         scoreOverlay.SetActive(false);
         endGameFirstOverlay.SetActive(false);
         cardManager.hideAllContainerImages();
@@ -422,14 +453,15 @@ public class GameManager : MonoBehaviour {
         turnUpto=0;
         initScore();
         speechbubble.SetActive(false);
+        shopOverlay.SetActive(false);
         cardManager.dealAllCards();
         
 
         setCanvasStatus("GameCanvas", true);
         setCanvasStatus("ControlPanelCanvas", true, false);
         audioManager.changeMusicMood(MusicMood.bass_and_drums);
-        //audioManager.changeMusicMood(MusicMood.slow_just_bass);
-        //audioManager.changeMusicMoodAfterCurrentLoop(MusicMood.bass_drums_and_boopboop);
+
+        updateUI();
     }
 
     void setCanvasStatus(string canvasTag, bool newState, bool hideOthers=true) {
@@ -469,7 +501,11 @@ public class GameManager : MonoBehaviour {
 
     void initScore() {
         score=0;
+        shopIncrement=100; 
+        nextShopScore=-1000;
+        shopUsesAvailable=0;
         scoreHolders.Clear();
+        checkShopVoucherThreshold();
         for(int i=0; i<Enum.GetNames(typeof(HandType)).Length; i++) {
             ScoreHolder scoreHolder = new ScoreHolder();
             scoreHolder.handType=(HandType)i;
@@ -515,6 +551,9 @@ public class GameManager : MonoBehaviour {
     public void updateUI() {
         scoreText.text="Score: "+score.ToString();
         hpText.text=hp.ToString();
+
+        shopButton.SetActive(shopUsesAvailable>0);
+        shopVouchersTXT.text="Shop vouchers: "+shopUsesAvailable.ToString()+"<br>Next voucher: "+nextShopScore.ToString();
     }
 
     //Tick down the counters on enemies. We don't tick down the one in the hand played
@@ -602,7 +641,6 @@ public class GameManager : MonoBehaviour {
         return enemy;
     }
 
-    //TODO - implement
     public void checkIfLostGame() {
         if (hp<=0) {
             gameState=GameState.between_games;
@@ -636,5 +674,134 @@ public class GameManager : MonoBehaviour {
     public void clickHome() {
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
+
+    public void clickShop() {
+        shopOverlay.SetActive(true);
+        shopSpeechTXT.text= bluortSpeeches[UnityEngine.Random.Range(0, bluortSpeeches.Count)];
+        shopUsesAvailable--;
+        shopPurchaseButton.GetComponent<Button>().interactable=false;
+        enableAllShopObjects();
+
+        foreach(GameObject cardContainer in shopCardContainers) {
+            Card card = cardManager.drawCard();
+            card.setZone(CardZone.shop);
+            cardsInShop.Add(card);
+            card.CardUI.transform.SetParent(cardContainer.transform);
+            card.CardUI.transform.localPosition=Vector3.zero;
+            card.CardUI.transform.localScale=new Vector3(cardManager.SMALL_CARD_SIZE, cardManager.SMALL_CARD_SIZE, cardManager.SMALL_CARD_SIZE);
+        }
+
+        foreach(GameObject shopBuffContainer in shopBuffContainers) {
+            CardBuffSO cardBuff = getUniqueBuff(buffsInShop);
+            buffsInShop.Add(cardBuff);
+            shopBuffContainer.transform.GetChild(0).GetComponent<Image>().sprite=cardBuff.sprite;
+            shopBuffContainer.transform.GetChild(1).GetComponent<TextMeshProUGUI>().text=cardBuff.buffName;
+        }
+
+        updateUI();
+        
+    }
+
+    public CardBuffSO getUniqueBuff(List<CardBuffSO> existingBuffs) {
+        CardBuffSO cardBuff = cardManager.getRandomBuff();
+        foreach(CardBuffSO buff in existingBuffs) {
+            if (buff.buffName==cardBuff.buffName) {
+                return getUniqueBuff(existingBuffs);
+            }
+        }
+        return cardBuff;
+    }
+
+    public void clickSkipShop() {
+        shopOverlay.SetActive(false);
+        foreach(Card card in cardsInShop) {
+            cardManager.discardCard(card);
+        }
+        cardsInShop.Clear();
+        buffsInShop.Clear();
+    }
+
+    public void enableShopCard() {
+
+    }
+
+    public void clickShopPurchase() {
+        Card card = cardsInShop[shopCardSelected];
+        CardBuffSO buff = buffsInShop[shopBuffSelected];    
+
+
+    //public enum CardEnhancement {increase_score, increase_mult, all_suits, remove_card, increase_rank, decrease_rank, copy_card};
+        //Apply our buff to our card
+        switch (buff.cardEnhancement) {
+            case CardEnhancement.increase_score:
+            case CardEnhancement.increase_mult:
+            case CardEnhancement.all_suits:
+                card.addBuff(buff);
+            break;
+            case CardEnhancement.remove_card:
+                cardsInShop.Remove(card);
+                card.Destroy();
+            break;
+            case CardEnhancement.increase_rank:
+                card.modifyRank(1);
+            break;
+            case CardEnhancement.decrease_rank:
+                card.modifyRank(-1);
+            break;
+            case CardEnhancement.copy_card:
+                Card newCard=card.cloneCard(cardManager.cardPrefab);
+                cardsInShop.Add(newCard);
+            break;
+        }
+
+        clickSkipShop();
+    }
+
+    public void clickedShopObject(bool isCard, int cardPicked) {
+        //Debug.Log("Clicked shop object"+isCard+" "+cardPicked);
+
+        if (isCard) {
+            int cardUpto=0;
+            shopCardSelected=cardPicked;
+            foreach(GameObject cardContainer in shopCardContainers) {
+                cardContainer.GetComponent<CanvasGroup>().alpha= (cardUpto==cardPicked ? 1f : .2f);
+                cardUpto++;
+            }
+        }
+        else {
+            int buffUpto=0;
+            shopBuffSelected=cardPicked;
+            foreach(GameObject buffContainer in shopBuffContainers) {
+                buffContainer.GetComponent<CanvasGroup>().alpha= (buffUpto==cardPicked ? 1f : .2f);
+                buffUpto++;
+            }
+        }
+
+        if (shopCardSelected>-1 && shopBuffSelected>-1) {
+            shopPurchaseButton.GetComponent<Button>().interactable=true;
+        }
+    }
+
+    public void enableAllShopObjects() {
+        foreach(GameObject cardContainer in shopCardContainers) {
+            cardContainer.GetComponent<CanvasGroup>().alpha=1f;
+        }
+        foreach(GameObject buffContainer in shopBuffContainers) {
+            buffContainer.GetComponent<CanvasGroup>().alpha=1f;
+        }
+    }
+
+    private void checkShopVoucherThreshold(int depth=0) {
+        if (score>=nextShopScore) {
+            shopUsesAvailable++;
+            shopIncrement+=SHOP_INCREMENT_INCREASE;
+            nextShopScore+=shopIncrement;
+            if (depth==0) {
+                animationManager.animateObjectExpandAndFade(shopButton, .3f, 2f);
+            }
+            checkShopVoucherThreshold(depth++);
+        }
+    }
+
 }
 

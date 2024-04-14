@@ -15,5 +15,6 @@ MonoBehaviour:
   buffName: Decrease Rank
   color: {r: 0, g: 1, b: 0.15667748, a: 0}
   buffString: Decrease Rank
-  sprite: {fileID: 21300000, guid: 697755147e5a64bed912ff5a88590592, type: 3}
+  sprite: {fileID: 21300000, guid: 884ddde11431843678adcd26028cdc97, type: 3}
   cardEnhancement: 5
+  fontWhite: 0
