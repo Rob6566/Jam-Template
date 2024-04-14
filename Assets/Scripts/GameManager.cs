@@ -39,10 +39,13 @@ public class GameManager : MonoBehaviour {
     public TextMeshProUGUI speechText;
     int hideEnemySpeechInXRounds=0;
     List<string> nemesisSpeeches = new List<string>{
-        "I'm going to get you!",
-        "You can't hide from me!",
-        "I'm coming for you!",
-        "You're going down!"
+        "You fold faster than a cheap tent in a windstorm.",
+        "I summon monstrosities from your darkest nightmares, and you deign to challenge me with little bits of cardboard?",
+        "You might want to stick to rock-paper-scissors.",
+        "We're both rulebreakers. I tear down the barriers between dimensions. You cheat at internet card games.",
+        "I've got more trump support than a MAGA rally.",
+        "Dealer! Are they allowed to do that?",
+        "I saw you pull that ace out of your sleeve."
     };
 
     //Scoring Overlay
@@ -177,8 +180,6 @@ public class GameManager : MonoBehaviour {
 
         hideAllContainerImages();
 
-        cardManager.dealAllCards();
-
         //Load high scores
         StartCoroutine(highScoreManager.LoadScores());
     }
@@ -208,7 +209,6 @@ public class GameManager : MonoBehaviour {
     void updateScoring() {
         tempScoreTimeSinceLastEvent+=Time.deltaTime*animationSpeed;
         List<GameObject> handObjects;
-        Debug.Log("Update scoring yo");
         //public enum ScoringAnimation {about_to_start, fade_in, hand_type_fade_in, hand_fade_in, labels_fade_in, card_numbers_fade_in, card_1_score, card_2_score, card_3_score, card_4_score, card_5_score, hand_points_fade_in, hand_mult_fade_in, total_points_fade_in, total_x_fade_in, total_mult_fade_in, total_fade_in, fade_out, animate_score};
         bool nextScoringEvent=false;
         switch (scoringAnimation) {
@@ -346,13 +346,10 @@ public class GameManager : MonoBehaviour {
                 setDraftButtonsActive(true);
 
                 List<Enemy> enemiesToRemove = new List<Enemy>();
-                Debug.Log("Will we damage enemies???");
                 foreach (Enemy enemy in enemies) {
                     if ((enemy.enemyPosition+1)!=tempScoreHand) {
-                        Debug.Log("Skipped damaging enemy in position "+enemy.enemyPosition);
                         continue;
                     }
-                    Debug.Log("Damaging enemy PEW in position "+enemy.enemyPosition+" with "+tempScoreTotal+" damage");
                    enemy.HP-=tempScoreTotal;
                    enemy.updateUI();
                    if (enemy.HP>0) {
@@ -425,6 +422,7 @@ public class GameManager : MonoBehaviour {
         turnUpto=0;
         initScore();
         speechbubble.SetActive(false);
+        cardManager.dealAllCards();
         
 
         setCanvasStatus("GameCanvas", true);
@@ -553,11 +551,11 @@ public class GameManager : MonoBehaviour {
         if (hideEnemySpeechInXRounds<0) {
             speechbubble.SetActive(false);
         }
-        else if(hideEnemySpeechInXRounds<-3 && UnityEngine.Random.Range(0, 100)>80) {
+        if(hideEnemySpeechInXRounds<-3 && UnityEngine.Random.Range(0, 100)>80) {
             hideEnemySpeechInXRounds=2;
             speechbubble.SetActive(true);
             speechText.text=nemesisSpeeches[UnityEngine.Random.Range(0, nemesisSpeeches.Count)];
-            animationManager.animateObjectExpandAndFade(speechbubble, .5f, 2f);
+            animationManager.animateObjectExpandAndFade(speechbubble, .2f, 1.5f);
         }
     }
 
@@ -584,14 +582,24 @@ public class GameManager : MonoBehaviour {
                 enemyObject.transform.SetParent(enemyContainers[i].transform);
                 enemyObject.transform.localPosition=Vector3.zero;
                 enemyObject.transform.localScale=new Vector3(1.4f, 1.4f, 1.4f);
-                EnemySO enemySO = enemySOs[UnityEngine.Random.Range(0, enemySOs.Count)];
+                
+                EnemySO enemySO = getRandomEnemy();
+                
                 Enemy enemy = new Enemy();
                 enemy.init(this, enemySO, enemyObject, i);
                 enemies.Add(enemy);
                 break;
             }
         }
-        //TODO - boss dude should be sassy
+
+    }
+
+    private EnemySO getRandomEnemy() {
+        EnemySO enemy = enemySOs[UnityEngine.Random.Range(0, enemySOs.Count)];
+        if (enemy.spawnAfterRound>turnUpto) {
+            return getRandomEnemy(); //Yay infinite loop
+        }
+        return enemy;
     }
 
     //TODO - implement

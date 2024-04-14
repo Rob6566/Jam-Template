@@ -26,9 +26,14 @@ public class AnimationManager : MonoBehaviour {
         if (animatedObjects.Count>0) {
             List<AnimatedObject> objectsToRemove = new List<AnimatedObject>();
             foreach (AnimatedObject animatedObject in animatedObjects) {
+                if (animatedObject.gameObject==null) {
+                    continue;
+                }
+
                 animatedObject.timeSpent+=(Time.deltaTime*gameManager.AnimationSpeed);
                 if (animatedObject.timeSpent>=animatedObject.totalTime) {
                     if (animatedObject.expandAndFade) {
+                        animatedObject.gameObject.SetActive(false);
                         UnityEngine.Object.Destroy(animatedObject.gameObject);
                     }
                     else {
@@ -53,12 +58,14 @@ public class AnimationManager : MonoBehaviour {
                 }
             }
             foreach (AnimatedObject objectToRemove in objectsToRemove) {
-                animatedObjects.Remove(objectToRemove);
+               // animatedObjects.Remove(objectToRemove);
+               //TODO Super hacky - we're currently not removing the object from the list or destroying it
             }
         }
     }
 
     public void animateObject(GameObject gameObject, GameObject newParentObject, Vector3 targetPosition, Vector3 endScale, float totalTime) {
+        Debug.Log("Animating object "+gameObject.name+" to "+newParentObject.name+" in "+totalTime+" seconds");
         AnimatedObject newAnimatedObject = new AnimatedObject();
         newAnimatedObject.gameObject=gameObject;
         newAnimatedObject.targetParent=newParentObject;
@@ -96,6 +103,8 @@ public class AnimationManager : MonoBehaviour {
 
 
     public void animateObjectExpandAndFade(GameObject gameObject, float totalTime, float expandToScale) {
+
+        Debug.Log("Animating object expand and fade "+gameObject.name+" to scale "+expandToScale+" in "+totalTime+" seconds");
         AnimatedObject newAnimatedObject = new AnimatedObject();
         GameObject clonedGameObject=UnityEngine.Object.Instantiate(gameObject);
         clonedGameObject.transform.SetParent(gameObject.transform.parent);

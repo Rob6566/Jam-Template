@@ -9,11 +9,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 00fd3463800f042e0a27be818335e765, type: 3}
-  m_Name: Obstinate Goblin
+  m_Script: {fileID: 11500000, guid: c1633ea0e515e4bd4a60a20cec9d1711, type: 3}
+  m_Name: remove_card
   m_EditorClassIdentifier: 
-  enemyName: Obstinate Goblin
-  sprite: {fileID: 21300000, guid: 961a81e27ead94ef4ac3dd9ee9b857fa, type: 3}
-  HP: 100
-  turnsUntilAttack: 15
-  difficulty: 1
+  buffName: Remove Card
+  color: {r: 0, g: 0, b: 0, a: 0}
+  buffString: Remove Card
+  sprite: {fileID: 21300000, guid: 4803541624fe049808581e791c4bf6ce, type: 3}
+  cardEnhancement: 3

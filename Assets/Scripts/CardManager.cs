@@ -13,6 +13,7 @@ public enum CardRank {A, two, three, four, five, six, seven, eight, nine, ten, J
 public enum CardShader {Glow};
 public enum CardZone {deck, discard, selectable, nextup, hand1, hand2, hand3};
 public enum HandType {high_card, pair, two_pair, three_of_a_kind, straight, flush, full_house, four_of_a_kind, straight_flush, five_of_a_kind, full_flush, five_flush};
+public enum CardEnhancement {increase_score, increase_mult, all_suits, remove_card, increase_rank, decrease_rank, copy_card};
 
 public class CardManager : MonoBehaviour {
 
@@ -22,6 +23,7 @@ public class CardManager : MonoBehaviour {
 
     public List<CardSO> allCardSO = new List<CardSO>();
     public List<HandSO> allHandSO = new List<HandSO>();
+    public List<CardEnhancement> allEnhancements = new List<CardEnhancement>();
     public GameObject cardPrefab;
 
     public Sprite cardBackSprite;
@@ -41,8 +43,8 @@ public class CardManager : MonoBehaviour {
     public List<GameObject> card3NextUpContainers;
     public List<GameObject> nextUpBonusContainers;
 
+    public List<GameObject> nextUpContainers;
     public List<GameObject> handContainers = new List<GameObject>();
-
     public List<GameObject> currentDraftContainers = new List<GameObject>();
     public GameObject currentBonusContainer;
 
@@ -227,7 +229,7 @@ public class CardManager : MonoBehaviour {
     }
 
     public void dealAllCards() {
-        Invoke("dealAllCardsExecute", 1f);
+        Invoke("dealAllCardsExecute", .1f);
     }
     
     //Animates dealing out all cards when the game starts
@@ -458,6 +460,46 @@ public class CardManager : MonoBehaviour {
             }
         }
         return "Unknown Hand Type";
+    }
+
+
+    public void hoveredButton(int targetHand, int cardPicked) {
+        float LOW_OPACITY=.1f;
+        int containerUpto=0;
+        foreach(GameObject container in nextUpContainers) {
+            float transLevel=(containerUpto+1==cardPicked ? 1f : LOW_OPACITY);
+            setContainerTrans(container,transLevel);
+            containerUpto++;
+        }
+        containerUpto=0;
+        foreach(GameObject container in handContainers) {
+            float transLevel=(containerUpto+1==targetHand ? 1f : LOW_OPACITY);
+            setContainerTrans(container, transLevel);
+            containerUpto++;
+        }
+        containerUpto=0;
+        foreach(GameObject container in currentDraftContainers) {
+            float transLevel=(containerUpto+1==cardPicked ? 1f : LOW_OPACITY);
+            setContainerTrans(container, transLevel);
+            containerUpto++;
+        }
+    }
+    
+    //Set all button hovers back to normal
+    public void unHoveredButton() {
+        foreach(GameObject container in nextUpContainers) {
+            setContainerTrans(container, 1f);
+        }
+        foreach(GameObject container in handContainers) {
+            setContainerTrans(container, 1f);
+        }
+        foreach(GameObject container in currentDraftContainers) {
+            setContainerTrans(container, 1f);
+        }
+    }
+
+    void setContainerTrans(GameObject container, float transparency) {
+        container.GetComponent<CanvasGroup>().alpha=transparency;
     }
 
 

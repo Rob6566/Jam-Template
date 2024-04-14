@@ -27,6 +27,8 @@ public class Card {
     public Sprite sprite;
     public string cardClass="BasicCard";
 
+    public List<CardBuffSO> cardBuffs = new List<CardBuffSO>();
+
     CardZone cardZone;
     public CardZone CardZone {get {return cardZone;}}
 

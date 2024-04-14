@@ -13,4 +13,5 @@ public class EnemySO : ScriptableObject {
     public int HP;
     public int turnsUntilAttack;
     public int difficulty;
+    public int spawnAfterRound=-1;
 }
