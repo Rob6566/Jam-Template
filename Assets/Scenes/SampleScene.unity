@@ -17121,7 +17121,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ee158225ee1e59f4791627785501d950, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  shaderTypes: 4
+  shaderTypes: 0
   normalStrength: 5
   normalSmoothing: 1
   computingNormal: 0
@@ -26920,7 +26920,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_text: "Greetings, I'm Bluort the Trustworthy, and \nI'm here on behalf of the
-    Great Wizard Fizzlebeard to discuss the <b>terms of your surrender</b>.\n\n...At
+    Great Summoner Fizzlebeard to discuss the <b>terms of your surrender</b>.\n\n...At
     least, that's what I should be doing, but I'm fed up with that guy. You wouldn't
     believe the hours he makes us work, and <b>Marketing always steals the good parking
     spaces</b>."
@@ -27721,6 +27721,7 @@ MonoBehaviour:
   audioSources:
   - {fileID: 606050495}
   - {fileID: 169373754}
+  moodPlaying: 0
 --- !u!1 &1683291197
 GameObject:
   m_ObjectHideFlags: 0

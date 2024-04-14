@@ -56,6 +56,7 @@ public class GameManager : MonoBehaviour {
         "You didn't buy these from me",
         "These fell off the back of a truck",
         "Buy 1 get 1 - and that's cutting my own throat",
+        "If you see one-eyed Margaret from Marketing, give her one from me"
     };
 
     //Scoring Overlay
