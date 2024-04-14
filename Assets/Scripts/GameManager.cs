@@ -31,6 +31,9 @@ public class GameManager : MonoBehaviour {
 
     public List<Enemy> enemies = new List<Enemy>();
 
+    //Text Mesh Pro checkbox for skipping tutorial
+    public Toggle skipTutorialToggle;
+
     [SerializeField]
     List<EnemySO> enemySOs;
 
@@ -43,7 +46,7 @@ public class GameManager : MonoBehaviour {
         "I summon monstrosities from your darkest nightmares, and you deign to challenge me with little bits of cardboard?",
         "You might want to stick to rock-paper-scissors.",
         "We're both rulebreakers. I tear down the barriers between dimensions. You cheat at internet card games.",
-        "I've got more trump support than a MAGA rally.",
+        //"I've got more trump support than a MAGA rally.",
         "Dealer! Are they allowed to do that?",
         "I saw you pull that ace out of your sleeve."
     };
@@ -70,6 +73,7 @@ public class GameManager : MonoBehaviour {
     public TextMeshProUGUI scoreTotalMult;
     public TextMeshProUGUI scoreLblX;
     public TextMeshProUGUI scoreTotal;
+
 
     
     //End Game Overlay
@@ -242,6 +246,7 @@ public class GameManager : MonoBehaviour {
             case ScoringAnimation.about_to_start:
                 nextScoringEvent=true;
                 setDraftButtonsActive(false);
+                audioManager.changeMusicMood(MusicMood.scoring);
             break;
 
             case ScoringAnimation.fade_in:
@@ -283,7 +288,7 @@ public class GameManager : MonoBehaviour {
                 scoreHandMult.text="";
                 if (tempScoreTimeSinceLastEvent>.5f) {
                     nextScoringEvent=true; 
-                    audioManager.playSound(GameSound.deal, 1f);
+                    audioManager.playSound(GameSound.score, 1f, 0);
                 }
             break;
 
@@ -306,7 +311,7 @@ public class GameManager : MonoBehaviour {
                     nextScoringEvent=true;
                     tempScoreCardsInHand[cardNo].CardUI.transform.localScale=new Vector3(cardManager.SMALL_CARD_SIZE, cardManager.SMALL_CARD_SIZE, cardManager.SMALL_CARD_SIZE);
                     if (cardNo<4) {
-                        audioManager.playSound(GameSound.deal, 1f);
+                        audioManager.playSound(GameSound.score, 1f, cardNo+1);
                     }
                 }
             break;
@@ -372,6 +377,7 @@ public class GameManager : MonoBehaviour {
                 tempScoreTotalPoints=0;
                 setDraftButtonsActive(true);
                 checkShopVoucherThreshold();
+                audioManager.changeMusicMood(MusicMood.game);
 
                 List<Enemy> enemiesToRemove = new List<Enemy>();
                 foreach (Enemy enemy in enemies) {
@@ -457,14 +463,26 @@ public class GameManager : MonoBehaviour {
         cardManager.dealAllCards();
         
 
-        setCanvasStatus("GameCanvas", true);
+        if (skipTutorialToggle.isOn) {
+            setCanvasStatus("GameCanvas", true);
+            audioManager.changeMusicMood(MusicMood.game);
+        }
+        else {
+            setCanvasStatus("Tutorial1", true);
+            audioManager.changeMusicMood(MusicMood.tutorial);
+        }
+
         setCanvasStatus("ControlPanelCanvas", true, false);
-        audioManager.changeMusicMood(MusicMood.bass_and_drums);
+        
 
         updateUI();
     }
 
     public void setActiveCanvas(string canvasTag) {
+        Debug.Log("Set Active Canvas "+canvasTag);
+        if (canvasTag=="GameCanvas") {
+            audioManager.changeMusicMood(MusicMood.game);
+        }
         setCanvasStatus(canvasTag, true);
     }
 
@@ -506,7 +524,7 @@ public class GameManager : MonoBehaviour {
     void initScore() {
         score=0;
         shopIncrement=100; 
-        nextShopScore=-1000;
+        nextShopScore=0;
         shopUsesAvailable=0;
         scoreHolders.Clear();
         checkShopVoucherThreshold();
@@ -669,7 +687,7 @@ public class GameManager : MonoBehaviour {
             endGameTXTEnemiesUnsummoned.GetComponent<TextMeshProUGUI>().text=enemiesUnsummoned.ToString();
             endGameTXTMostPlayedHand.GetComponent<TextMeshProUGUI>().text=cardManager.getHandTypeName(mostPlayedHand);
 
-            audioManager.changeMusicMood(MusicMood.slow_just_bass);
+            audioManager.changeMusicMood(MusicMood.dead);
 
             StartCoroutine(highScoreManager.SaveScore(score));
         }
@@ -702,6 +720,8 @@ public class GameManager : MonoBehaviour {
             shopBuffContainer.transform.GetChild(1).GetComponent<TextMeshProUGUI>().text=cardBuff.buffName;
         }
 
+        audioManager.changeMusicMood(MusicMood.shop);
+
         updateUI();
         
     }
@@ -723,6 +743,7 @@ public class GameManager : MonoBehaviour {
         }
         cardsInShop.Clear();
         buffsInShop.Clear();
+        audioManager.changeMusicMood(MusicMood.game);
     }
 
     public void enableShopCard() {
@@ -755,6 +776,7 @@ public class GameManager : MonoBehaviour {
             case CardEnhancement.copy_card:
                 Card newCard=card.cloneCard(cardManager.cardPrefab);
                 cardsInShop.Add(newCard);
+                newCard.CardUI.transform.localScale=new Vector3(cardManager.SMALL_CARD_SIZE, cardManager.SMALL_CARD_SIZE, cardManager.SMALL_CARD_SIZE);
             break;
         }
 

@@ -10,9 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 80246770e374941fd95090ed221f19d7, type: 3}
-  m_Name: Slow Bass
+  m_Name: 5-shop
   m_EditorClassIdentifier: 
   tracks:
-  - {fileID: 8300000, guid: bb800d1abf5c9431f8c109b523ba524e, type: 3}
-  musicMood: 1
-  loopsInTrack: 12
+  - {fileID: 8300000, guid: 2893a7e76ecf84b7d9f53ec09d73cf27, type: 3}
+  musicMood: 4
+  loopsInTrack: 4
+  gameSound: 0

@@ -13,10 +13,11 @@ MonoBehaviour:
   m_Name: Card Score
   m_EditorClassIdentifier: 
   tracks:
-  - {fileID: 8300000, guid: edbf0e48d79d541159e9224f33b55ba1, type: 3}
-  - {fileID: 8300000, guid: 793aaa93a106444e9a6e92e43659d5e2, type: 3}
-  - {fileID: 8300000, guid: d6af02f84142c42e490a61c3040ff039, type: 3}
-  - {fileID: 8300000, guid: 63ae50f88535d4bc1a585214f6f00e45, type: 3}
+  - {fileID: 8300000, guid: 1bd05295c72af4644bd0634ecaa22a17, type: 3}
+  - {fileID: 8300000, guid: dfd6428b7ee6546b5a2c4939b1397a47, type: 3}
+  - {fileID: 8300000, guid: 878b390a6ede04af6b4d89ea89675c3e, type: 3}
+  - {fileID: 8300000, guid: 77c67e5d822ac48d69bc7fa7d3c8ff87, type: 3}
+  - {fileID: 8300000, guid: b59cbd76b67b74625b879c389bbd5790, type: 3}
   musicMood: 0
   loopsInTrack: 0
   gameSound: 3

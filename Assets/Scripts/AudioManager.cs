@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public enum MusicMood {none, slow_just_bass, just_bass, bass_and_drums, bass_drums_and_boopboop};
+public enum MusicMood {none, intro, tutorial, game, shop, scoring, dead, intense};
 public enum GameSound {deal, shuffle, flick, score};
 public class AudioManager : MonoBehaviour {
     [SerializeField] AudioSource sfxAudioSource;
@@ -97,11 +97,11 @@ public class AudioManager : MonoBehaviour {
         StartCoroutine (AudioFade.FadeOut(music[selectedMusic], fadeOutTime));
     }*/
 
-    public void playSound(GameSound soundToPlay, float volume) {
+    public void playSound(GameSound soundToPlay, float volume, int desiredSound=-1) {
          foreach(MusicSet sfxSet in sfxSets) {
             if (sfxSet.gameSound==soundToPlay) {
                 //Play a random sound from the sfxSet
-                int selectedSound = Random.Range(0, sfxSet.tracks.Count);
+                int selectedSound = desiredSound>-1 ? desiredSound : Random.Range(0, sfxSet.tracks.Count);
                 Debug.Log("Play sound "+selectedSound+" from set "+sfxSet.gameSound+" with volume "+volume*sfxScrollbar.value);
                 sfxAudioSource.PlayOneShot(sfxSet.tracks[selectedSound], volume*sfxScrollbar.value);
             }
@@ -124,7 +124,7 @@ public class AudioManager : MonoBehaviour {
 
     public void initAdaptiveMusic() {
         
-        int barsInNewTrack=changeMusicMood(MusicMood.just_bass);
+        int barsInNewTrack=changeMusicMood(MusicMood.intro);
 
         nextStartTime = AudioSettings.dspTime + 1;
         

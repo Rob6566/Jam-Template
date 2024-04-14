@@ -10,9 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 80246770e374941fd95090ed221f19d7, type: 3}
-  m_Name: Bass_and_Drums
+  m_Name: 1-intro-just-base
   m_EditorClassIdentifier: 
   tracks:
-  - {fileID: 8300000, guid: 22d7ba3ef758e4891ad9a182cc4b5971, type: 3}
-  musicMood: 3
-  loopsInTrack: 8
+  - {fileID: 8300000, guid: 50f586abf20384dacba461d6842dc65f, type: 3}
+  musicMood: 1
+  loopsInTrack: 12
+  gameSound: 0
+  test2: 0
