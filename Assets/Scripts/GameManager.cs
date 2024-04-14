@@ -464,6 +464,10 @@ public class GameManager : MonoBehaviour {
         updateUI();
     }
 
+    public void setActiveCanvas(string canvasTag) {
+        setCanvasStatus(canvasTag, true);
+    }
+
     void setCanvasStatus(string canvasTag, bool newState, bool hideOthers=true) {
         foreach(GameObject thisCanvas in canvasses) {
             if (thisCanvas.tag=="ControlPanelCanvas") {

@@ -85,7 +85,7 @@ public class CardManager : MonoBehaviour {
         generateInitialDeck();
 
         //TESTING
-        gameManager.animationManager.animateObjectToNewParent(testCard, testTargetLocation, 30f, .4f);
+        //gameManager.animationManager.animateObjectToNewParent(testCard, testTargetLocation, 30f, .4f);
     }
 
     public void generateInitialDeck() {

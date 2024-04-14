@@ -18,6 +18,13 @@ TagManager:
   - ShopCardContainer3
   - ShopCardContainer4
   - ShopCardContainer5
+  - Tutorial7
+  - Tutorial6
+  - Tutorial5
+  - Tutorial4
+  - Tutorial3
+  - Tutorial2
+  - Tutorial1
   layers:
   - Default
   - TransparentFX
