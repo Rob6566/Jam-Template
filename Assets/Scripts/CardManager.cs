@@ -17,7 +17,7 @@ public enum CardEnhancement {increase_score, increase_mult, all_suits, remove_ca
 
 public class CardManager : MonoBehaviour {
 
-    public float TINY_CARD_SIZE=.3f;
+    public float TINY_CARD_SIZE=.32f;
     public float SMALL_CARD_SIZE=.4f;
 
     //Bonuses conferred on cards by enhancements
