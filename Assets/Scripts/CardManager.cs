@@ -13,7 +13,7 @@ public enum CardRank {A, two, three, four, five, six, seven, eight, nine, ten, J
 public enum CardShader {Glow};
 public enum CardZone {deck, discard, selectable, nextup, hand1, hand2, hand3, shop};
 public enum HandType {high_card, pair, two_pair, three_of_a_kind, straight, flush, full_house, four_of_a_kind, straight_flush, five_of_a_kind, full_flush, five_flush};
-public enum CardEnhancement {increase_score, increase_mult, all_suits, remove_card, increase_rank, decrease_rank, copy_card};
+public enum CardEnhancement {increase_score, increase_mult, all_suits, remove_card, increase_rank, decrease_rank, copy_card, increase_timer};
 
 public class CardManager : MonoBehaviour {
 
@@ -389,6 +389,11 @@ public class CardManager : MonoBehaviour {
              List<Card> handToMoveTo=(hand==1 ? hand1 : (hand==2 ? hand2 : hand3));
              List<GameObject> handContainers=(hand==1 ? hand1Containers : (hand==2 ? hand2Containers : hand3Containers));
 
+             int timerIncrease=cardDrafted.getTimerIncrease();
+             if (timerIncrease>0) {
+                 gameManager.increaseEnemyTimers(timerIncrease);
+             }
+
              bool completedHand=false;
 
              foreach(Card thisCard in currentDraftCards) {
@@ -515,7 +520,7 @@ public class CardManager : MonoBehaviour {
     }
 
     public CardBuffSO getRandomBuff() {
-        return allBuffs[UnityEngine.Random.Range(0, allBuffs.Count-1)];
+        return allBuffs[UnityEngine.Random.Range(0, allBuffs.Count)];
     }
 
     public void updateCardSprite(Card card) {

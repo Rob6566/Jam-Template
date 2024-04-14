@@ -212,4 +212,14 @@ public class Card {
 
         updateUI();
     }
+
+    public int getTimerIncrease() {
+        int timerIncrease=0;
+        foreach (CardBuffSO cardBuff in cardBuffs) {
+            if (cardBuff.cardEnhancement==CardEnhancement.increase_timer) {
+                timerIncrease++;
+            }
+        }
+        return timerIncrease;
+    }
 }

@@ -14,4 +14,5 @@ public class EnemySO : ScriptableObject {
     public int turnsUntilAttack;
     public int difficulty;
     public int spawnAfterRound=-1;
+    public int stopSpawningAfterRound=9999999;
 }

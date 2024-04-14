@@ -17,4 +17,5 @@ MonoBehaviour:
   HP: 500
   turnsUntilAttack: 12
   difficulty: 2
-  spawnAfterRound: 30
+  spawnAfterRound: 20
+  stopSpawningAfterRound: 9999999

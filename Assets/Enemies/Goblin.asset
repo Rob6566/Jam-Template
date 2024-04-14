@@ -18,3 +18,4 @@ MonoBehaviour:
   turnsUntilAttack: 12
   difficulty: 1
   spawnAfterRound: -1
+  stopSpawningAfterRound: 30

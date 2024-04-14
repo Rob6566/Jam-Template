@@ -102,7 +102,8 @@ public class GameManager : MonoBehaviour {
     List<Card> cardsInShop = new List<Card>();
     List<CardBuffSO> buffsInShop = new List<CardBuffSO>();
 
-
+    float animatePendingAttackTimer=0f;
+    bool animatePendingAlternator=false;
 
 
     //Vars used for card scoring animation
@@ -226,12 +227,22 @@ public class GameManager : MonoBehaviour {
             return;
         }
 
-        //if (animationManager.isAnimating()) {
-        //    return;
-       // }
-
         if (gameState==GameState.scoring) {
             updateScoring();            
+        }
+
+        animatePendingAttackTimer+=Time.deltaTime;
+        if (animatePendingAttackTimer>1.5f) {
+            animatePendingAlternator=!animatePendingAlternator;
+            foreach (Enemy enemy in enemies) {
+                if (enemy.turnsUntilAttack<3) { //Animate faster if attack is imminent
+                    enemy.animateTimer();
+                }
+                else if (enemy.turnsUntilAttack<5 && animatePendingAlternator) {
+                    enemy.animateTimer();
+                }
+            }
+            animatePendingAttackTimer=0f;
         }
     }
 
@@ -377,7 +388,7 @@ public class GameManager : MonoBehaviour {
                 tempScoreTotalPoints=0;
                 setDraftButtonsActive(true);
                 checkShopVoucherThreshold();
-                audioManager.changeMusicMood(MusicMood.game);
+                playGameMusic();
 
                 List<Enemy> enemiesToRemove = new List<Enemy>();
                 foreach (Enemy enemy in enemies) {
@@ -461,11 +472,12 @@ public class GameManager : MonoBehaviour {
         speechbubble.SetActive(false);
         shopOverlay.SetActive(false);
         cardManager.dealAllCards();
+        animatePendingAttackTimer=0f;
         
 
         if (skipTutorialToggle.isOn) {
             setCanvasStatus("GameCanvas", true);
-            audioManager.changeMusicMood(MusicMood.game);
+            playGameMusic();
         }
         else {
             setCanvasStatus("Tutorial1", true);
@@ -481,7 +493,7 @@ public class GameManager : MonoBehaviour {
     public void setActiveCanvas(string canvasTag) {
         Debug.Log("Set Active Canvas "+canvasTag);
         if (canvasTag=="GameCanvas") {
-            audioManager.changeMusicMood(MusicMood.game);
+            playGameMusic();
         }
         setCanvasStatus(canvasTag, true);
     }
@@ -575,7 +587,7 @@ public class GameManager : MonoBehaviour {
         hpText.text=hp.ToString();
 
         shopButton.SetActive(shopUsesAvailable>0);
-        shopVouchersTXT.text="Shop vouchers: "+shopUsesAvailable.ToString()+"<br>Next voucher: "+nextShopScore.ToString();
+        shopVouchersTXT.text="Shop vouchers: "+shopUsesAvailable.ToString()+"<br>Next voucher: "+nextShopScore.ToString()+"<br>Turn: "+turnUpto.ToString();
     }
 
     //Tick down the counters on enemies. We don't tick down the one in the hand played
@@ -605,6 +617,10 @@ public class GameManager : MonoBehaviour {
             enemyToRemove.Destroy();
         }
 
+        //Switch music intensity if needed
+        if (audioManager.moodPlaying!=getGameMood()) {
+            playGameMusic();
+        }
 
 
         //Enemy Speech
@@ -612,12 +628,13 @@ public class GameManager : MonoBehaviour {
         if (hideEnemySpeechInXRounds<0) {
             speechbubble.SetActive(false);
         }
-        if(hideEnemySpeechInXRounds<-3 && UnityEngine.Random.Range(0, 100)>80) {
+        if(hideEnemySpeechInXRounds<-3 && UnityEngine.Random.Range(0, 100)>60) {
             hideEnemySpeechInXRounds=2;
             speechbubble.SetActive(true);
             speechText.text=nemesisSpeeches[UnityEngine.Random.Range(0, nemesisSpeeches.Count)];
             animationManager.animateObjectExpandAndFade(speechbubble, .2f, 1.5f);
         }
+        updateUI();
     }
 
     public void spawnEnemies() {
@@ -657,7 +674,7 @@ public class GameManager : MonoBehaviour {
 
     private EnemySO getRandomEnemy() {
         EnemySO enemy = enemySOs[UnityEngine.Random.Range(0, enemySOs.Count)];
-        if (enemy.spawnAfterRound>turnUpto) {
+        if (enemy.spawnAfterRound>turnUpto || enemy.stopSpawningAfterRound<turnUpto) {
             return getRandomEnemy(); //Yay infinite loop
         }
         return enemy;
@@ -743,7 +760,7 @@ public class GameManager : MonoBehaviour {
         }
         cardsInShop.Clear();
         buffsInShop.Clear();
-        audioManager.changeMusicMood(MusicMood.game);
+        playGameMusic();
     }
 
     public void enableShopCard() {
@@ -761,6 +778,7 @@ public class GameManager : MonoBehaviour {
             case CardEnhancement.increase_score:
             case CardEnhancement.increase_mult:
             case CardEnhancement.all_suits:
+            case CardEnhancement.increase_timer:
                 card.addBuff(buff);
             break;
             case CardEnhancement.remove_card:
@@ -827,6 +845,27 @@ public class GameManager : MonoBehaviour {
             }
             checkShopVoucherThreshold(depth++);
         }
+    }
+
+    public void increaseEnemyTimers(int timerIncrease) {
+        foreach (Enemy enemy in enemies) {
+            enemy.turnsUntilAttack+=timerIncrease;
+            enemy.animateTimer();
+        }
+    }
+
+    public MusicMood getGameMood() {
+        MusicMood mood=MusicMood.game;
+        foreach (Enemy enemy in enemies) {
+            if (enemy.turnsUntilAttack<5) {
+                mood=MusicMood.intense;
+            }
+        }
+        return mood;
+    }
+
+    public void playGameMusic() {
+        audioManager.changeMusicMood(getGameMood());
     }
 
 }

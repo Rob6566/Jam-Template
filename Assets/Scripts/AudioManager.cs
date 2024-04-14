@@ -19,7 +19,7 @@ public class AudioManager : MonoBehaviour {
 
     public List<AudioSource> audioSources = new List<AudioSource>();
 
-    MusicMood moodPlaying = MusicMood.none;
+    public MusicMood moodPlaying = MusicMood.none;
     MusicMood desiredMood = MusicMood.none;
     MusicMood desiredMoodAfterEntireLoop = MusicMood.none;
     bool testRunning;
