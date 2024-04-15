@@ -107,6 +107,13 @@ public class Card {
         Card newCard = (Card)System.Activator.CreateInstance(System.Type.GetType(cardSO.cardClass));
 
         newCard.init(gameManager, clonedCardSO, cardGameObject);
+        newCard.cardRank=cardRank;
+        newCard.sprite=sprite;
+        foreach(CardBuffSO cardBuff in cardBuffs) {
+            newCard.addBuff(cardBuff);
+        }
+
+    
         //Probably want to overload init with a "Card" parameter, so we can clone any card modifications
 
         //Attach this card to the prefab, so it can respond to clicks

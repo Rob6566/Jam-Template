@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enemyName: Big Eye
   sprite: {fileID: 21300000, guid: 10c89fd1a3adb4fb7ae9cb73d830057e, type: 3}
-  HP: 1000
-  turnsUntilAttack: 18
+  HP: 1200
+  turnsUntilAttack: 12
   difficulty: 2
   spawnAfterRound: 40
   stopSpawningAfterRound: 9999999

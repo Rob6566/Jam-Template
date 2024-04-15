@@ -48,7 +48,8 @@ public class GameManager : MonoBehaviour {
         "We're both rulebreakers. I tear down the barriers between dimensions. You cheat at internet card games.",
         //"I've got more trump support than a MAGA rally.",
         "Dealer! Are they allowed to do that?",
-        "I saw you pull that ace out of your sleeve."
+        "I saw you pull that ace out of your sleeve.",
+        "This ain't Texas<br>(sung in a gravelly voice)"
     };
 
     List<string> bluortSpeeches = new List<string>{
@@ -56,7 +57,8 @@ public class GameManager : MonoBehaviour {
         "You didn't buy these from me",
         "These fell off the back of a truck",
         "Buy 1 get 1 - and that's cutting my own throat",
-        "If you see one-eyed Margaret from Marketing, give her one from me"
+        "If you see one-eyed Margaret from Marketing, give her one from me",
+        "I can't fix your poker face, but watch his when you play 5 Aces"
     };
 
     //Scoring Overlay
@@ -538,7 +540,7 @@ public class GameManager : MonoBehaviour {
         score=0;
         shopIncrement=100; 
         nextShopScore=0;
-        shopUsesAvailable=0;
+        shopUsesAvailable=5;
         scoreHolders.Clear();
         checkShopVoucherThreshold();
         for(int i=0; i<Enum.GetNames(typeof(HandType)).Length; i++) {
@@ -629,7 +631,7 @@ public class GameManager : MonoBehaviour {
         if (hideEnemySpeechInXRounds<0) {
             speechbubble.SetActive(false);
         }
-        if(hideEnemySpeechInXRounds<-3 && UnityEngine.Random.Range(0, 100)>60) {
+        if(hideEnemySpeechInXRounds<-3 && UnityEngine.Random.Range(0, 100)>50) {
             hideEnemySpeechInXRounds=2;
             speechbubble.SetActive(true);
             speechText.text=nemesisSpeeches[UnityEngine.Random.Range(0, nemesisSpeeches.Count)];

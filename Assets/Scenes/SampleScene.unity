@@ -3137,7 +3137,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'To the left of each card it the <b>3 cards that will be available next</b>
+  m_text: 'To the left of each card is the <b>3 cards that will be available next</b>
     if you pick it:'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}

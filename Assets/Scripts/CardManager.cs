@@ -183,15 +183,19 @@ public class CardManager : MonoBehaviour {
             }
             if (cardsOfThisType==2) {
                 pairs++;
+                Debug.Log("Hand has pair");
             }
-            else if (cardsOfThisType==3) {https://discussions.unity.com/t/enum-count/78841
+            else if (cardsOfThisType==3) {
                 threeOfAKind++;
+                Debug.Log("Hand has 3 of a kind");
             }
             else if (cardsOfThisType==4) {
                 fourOfAKind++;
+                Debug.Log("Hand has 4 of a kind");
             }
             else if (cardsOfThisType==5) {
                 fiveOfAKind++;
+                Debug.Log("Hand has 5 of a kind");
             }
         }
 

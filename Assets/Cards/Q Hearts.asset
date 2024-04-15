@@ -16,5 +16,5 @@ MonoBehaviour:
   cardSuit: 0
   cardRank: 11
   cardScore: 10
-  sprite: {fileID: 21300000, guid: 124b162b74827440388538979586245a, type: 3}
+  sprite: {fileID: 21300000, guid: bbce1dfde3c894cecab1c7add24d151c, type: 3}
   cardClass: BasicCard
