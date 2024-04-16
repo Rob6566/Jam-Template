@@ -540,7 +540,7 @@ public class GameManager : MonoBehaviour {
         score=0;
         shopIncrement=100; 
         nextShopScore=0;
-        shopUsesAvailable=5;
+        shopUsesAvailable=0;
         scoreHolders.Clear();
         checkShopVoucherThreshold();
         for(int i=0; i<Enum.GetNames(typeof(HandType)).Length; i++) {
@@ -850,11 +850,15 @@ public class GameManager : MonoBehaviour {
         }
     }
 
-    public void increaseEnemyTimers(int timerIncrease) {
-        foreach (Enemy enemy in enemies) {
-            enemy.turnsUntilAttack+=timerIncrease;
-            enemy.animateTimer();
-        }
+    public void increaseEnemyTimer(int timerIncrease, int enemy) {
+        foreach(Enemy thisEnemy in enemies) {
+                if (thisEnemy.enemyPosition==(enemy-1)) {
+                    thisEnemy.turnsUntilAttack+=timerIncrease;
+                    thisEnemy.updateUI();
+                    thisEnemy.animateTimer();
+                    break;
+                }
+            }
     }
 
     public MusicMood getGameMood() {

@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c1633ea0e515e4bd4a60a20cec9d1711, type: 3}
   m_Name: timer_up
   m_EditorClassIdentifier: 
-  buffName: Increase enemy timers when drafted
+  buffName: Increase enemy timer when drafted
   color: {r: 0.003070495, g: 0.5951346, b: 0.6509434, a: 0}
-  buffString: Timers++
+  buffString: Timer++
   sprite: {fileID: 21300000, guid: 5f10898fb40a044d0b95793521ca792e, type: 3}
   cardEnhancement: 7
   fontWhite: 1

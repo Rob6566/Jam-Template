@@ -395,7 +395,7 @@ public class CardManager : MonoBehaviour {
 
              int timerIncrease=cardDrafted.getTimerIncrease();
              if (timerIncrease>0) {
-                 gameManager.increaseEnemyTimers(timerIncrease);
+                 gameManager.increaseEnemyTimer(timerIncrease, hand);
              }
 
              bool completedHand=false;
