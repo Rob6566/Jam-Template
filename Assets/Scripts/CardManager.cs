@@ -159,7 +159,7 @@ public class CardManager : MonoBehaviour {
         foreach (Card card in sortedHand) {
             cardUpto++;
             if (cardUpto==1) {continue;}
-            else if (cardUpto==4 && previousRank==12 && card.cardRank==0) {
+            else if (cardUpto==2 && previousRank==(int)CardRank.A && card.cardRank==CardRank.ten) {
                 //Special handling for 10-J-Q-K-A straight
                 Debug.Log("Straight with Ace, card ="+card.cardName+" previousRank="+previousRank);
             }
