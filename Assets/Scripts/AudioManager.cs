@@ -140,6 +140,8 @@ public class AudioManager : MonoBehaviour {
 
     //Public function to allow us to change which mood to switch to on next transition. Return number of bars in new track
     public int changeMusicMood(MusicMood mood) {
+
+        Debug.Log("Change music mood to "+mood);
         int barsInNewTrack=0;
         if (moodPlaying==MusicMood.none) {
             moodPlaying=mood;

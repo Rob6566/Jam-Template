@@ -31,7 +31,7 @@ public class HighScoreManager: MonoBehaviour {
       IMPORTANT - TO AVOID INTERFERING WITH OTHER GAMES USING THE SCORE SERVER, GAME_ID MUST BE UNIQUE
     **************************************************************************************************/
 
-    const string GAME_ID = "ludum55-jam-rob-submitted";
+    const string GAME_ID = "ludum55-rob-postjam";
 
     /**************************************************************************************************
     **************************************************************************************************/

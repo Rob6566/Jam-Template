@@ -45,7 +45,7 @@ public class GameManager : MonoBehaviour {
         "You fold faster than a cheap tent in a windstorm.",
         "I summon monstrosities from your darkest nightmares, and you deign to challenge me with little bits of cardboard?",
         "You might want to stick to rock-paper-scissors.",
-        "We're both rulebreakers. I tear down the barriers between dimensions. You cheat at internet card games.",
+        "We're both rule breakers. I tear down the barriers between dimensions. You cheat at internet card games.",
         //"I've got more trump support than a MAGA rally.",
         "Dealer! Are they allowed to do that?",
         "I saw you pull that ace out of your sleeve.",
@@ -129,9 +129,9 @@ public class GameManager : MonoBehaviour {
     private int shopIncrement=0;
     private int SHOP_INCREMENT_INCREASE=20;
     private int shopUsesAvailable=0;
-    private int hp=100;
+    private int hp=200;
     private int turnUpto=0;
-    private const int START_HP=100;
+    private const int START_HP=200;
     public TextMeshProUGUI scoreText;
     public TextMeshProUGUI hpText;
     private int shopCardSelected=-1;
@@ -474,13 +474,13 @@ public class GameManager : MonoBehaviour {
         initScore();
         speechbubble.SetActive(false);
         shopOverlay.SetActive(false);
-        cardManager.dealAllCards();
         animatePendingAttackTimer=0f;
-        
 
         if (skipTutorialToggle.isOn) {
             setCanvasStatus("GameCanvas", true);
+            Debug.Log("PlaygameMusic mood gamecanvas startgame");
             playGameMusic();
+            cardManager.dealAllCards();
         }
         else {
             setCanvasStatus("Tutorial1", true);
@@ -496,9 +496,15 @@ public class GameManager : MonoBehaviour {
     public void setActiveCanvas(string canvasTag) {
         Debug.Log("Set Active Canvas "+canvasTag);
         if (canvasTag=="GameCanvas") {
+            Debug.Log("PlaygameMusic mood gamecanvas");
             playGameMusic();
         }
         setCanvasStatus(canvasTag, true);
+    }
+
+    public void skipTutorial() {
+        setActiveCanvas("GameCanvas");
+        cardManager.dealAllCards();
     }
 
     void setCanvasStatus(string canvasTag, bool newState, bool hideOthers=true) {
@@ -622,6 +628,7 @@ public class GameManager : MonoBehaviour {
 
         //Switch music intensity if needed
         if (audioManager.moodPlaying!=getGameMood()) {
+            Debug.Log("PlaygameMusic mood tickdown");
             playGameMusic();
         }
 
@@ -872,6 +879,7 @@ public class GameManager : MonoBehaviour {
     }
 
     public void playGameMusic() {
+        Debug.Log("PlayGameMusic mood");
         audioManager.changeMusicMood(getGameMood());
     }
 
