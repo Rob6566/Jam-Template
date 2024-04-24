@@ -172,12 +172,14 @@ public class Card {
             setCardImage(sprite);
             showBonusEffects();
         }
-
+        
         if (cardZone==CardZone.selectable || cardZone==CardZone.deck || cardZone==CardZone.discard || cardZone==CardZone.shop) {
             shrinkToRatio(gameManager.cardManager.SMALL_CARD_SIZE);
+            Debug.Log("Shrinking card "+cardName+" to "+gameManager.cardManager.SMALL_CARD_SIZE);
         }
         else {
             shrinkToRatio(gameManager.cardManager.TINY_CARD_SIZE);
+            Debug.Log("Shrinking card "+cardName+" to "+gameManager.cardManager.TINY_CARD_SIZE);
         }      
     }
 

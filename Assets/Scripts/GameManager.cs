@@ -546,7 +546,7 @@ public class GameManager : MonoBehaviour {
         score=0;
         shopIncrement=100; 
         nextShopScore=0;
-        shopUsesAvailable=0;
+        shopUsesAvailable=10;
         scoreHolders.Clear();
         checkShopVoucherThreshold();
         for(int i=0; i<Enum.GetNames(typeof(HandType)).Length; i++) {
@@ -828,9 +828,10 @@ public class GameManager : MonoBehaviour {
             break;
             case CardEnhancement.copy_card:
                 Card newCard=card.cloneCard(cardManager.cardPrefab);
-                cardsInShop.Add(newCard);
+                //cardsInShop.Add(newCard);
                 cardManager.registerCard(newCard);
-                newCard.CardUI.transform.localScale=new Vector3(cardManager.SMALL_CARD_SIZE, cardManager.SMALL_CARD_SIZE, cardManager.SMALL_CARD_SIZE);
+                cardManager.discardCard(newCard);
+                newCard.shrinkToRatio(cardManager.TINY_CARD_SIZE);
             break;
         }
 
