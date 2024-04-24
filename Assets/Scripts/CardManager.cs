@@ -241,11 +241,6 @@ public class CardManager : MonoBehaviour {
     }
 
     public void dealAllCards() {
-        Invoke("dealAllCardsExecute", .1f);
-    }
-    
-    //Animates dealing out all cards when the game starts
-    void dealAllCardsExecute() {
         foreach(GameObject draftContainer in currentDraftContainers) {
             Card thisCard=deck[0];
             thisCard.setZone(CardZone.selectable);
@@ -536,5 +531,29 @@ public class CardManager : MonoBehaviour {
         }
     }
 
+    public void registerCard(Card card) {
+        allCards.Add(card);
+    }
 
+    
+    public void resetDeck() {
+        Debug.Log("Resestting deck - cards="+allCards.Count);
+        
+        foreach(Card card in allCards) {
+            card.Destroy();
+        }
+
+        allCards.Clear();
+        deck.Clear();
+        discard.Clear();
+        hand1.Clear();
+        hand2.Clear();
+        hand3.Clear(); 
+        currentDraftCards.Clear();
+        nextUp1DraftCards.Clear();
+        nextUp2DraftCards.Clear();
+        nextUp3DraftCards.Clear();
+
+        generateInitialDeck();
+    }
 }

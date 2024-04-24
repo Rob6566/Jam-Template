@@ -10326,6 +10326,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 8e7ff9d65f2d54ad98f7bb8b15c07fc6, type: 2}
   - {fileID: 11400000, guid: d98631142528e42db9c1e7c1a6988521, type: 2}
   - {fileID: 11400000, guid: 4bb647a9ef44f493bb26aadb78d9a469, type: 2}
+  - {fileID: 11400000, guid: eefa1158d38f342c6ba3800fd859ea43, type: 2}
+  - {fileID: 11400000, guid: 124f13d4af47d4f23b7746e24ba864cf, type: 2}
   nemesis: {fileID: 1240397096}
   speechbubble: {fileID: 825560336}
   speechText: {fileID: 658925827}
@@ -13419,7 +13421,7 @@ GameObject:
   - component: {fileID: 837086410}
   - component: {fileID: 837086409}
   m_Layer: 0
-  m_Name: BTNTitle
+  m_Name: BTNRetry
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -13492,7 +13494,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 658854266}
         m_TargetAssemblyTypeName: GameManager, Assembly-CSharp
-        m_MethodName: clickHome
+        m_MethodName: clickRetry
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -31250,7 +31252,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Home
+  m_text: Retry
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}

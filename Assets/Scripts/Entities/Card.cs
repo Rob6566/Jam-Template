@@ -82,6 +82,7 @@ public class Card {
 
     public void setZone(CardZone newZone) {
         cardZone=newZone;
+        Debug.Log("Setting card zone "+cardName+" to "+cardZone.ToString());
         updateUI();
     }
 
@@ -136,8 +137,10 @@ public class Card {
     }
 
     void setCardImage(Sprite newSprite) {
+        //Debug.Log("Setting card image "+cardName);
         cardImage=cardUI.transform.GetComponent<Image>();
         cardImage.sprite=newSprite;
+        //Debug.Log("Set card image "+cardName);
     }
 
     public void shrinkToRatio(float newRatio) {

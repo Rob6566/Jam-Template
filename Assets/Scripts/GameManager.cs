@@ -131,7 +131,7 @@ public class GameManager : MonoBehaviour {
     private int shopUsesAvailable=0;
     private int hp=200;
     private int turnUpto=0;
-    private const int START_HP=200;
+    private const int START_HP=1; //TODO 200
     public TextMeshProUGUI scoreText;
     public TextMeshProUGUI hpText;
     private int shopCardSelected=-1;
@@ -617,7 +617,9 @@ public class GameManager : MonoBehaviour {
                 //TODO - animate
                 hp-=enemy.HP;
                 updateUI();
-                checkIfLostGame();
+                if (checkIfLostGame()) {
+                    return;
+                }
                 enemiesToRemove.Add(enemy);
             }
         }
@@ -628,7 +630,6 @@ public class GameManager : MonoBehaviour {
 
         //Switch music intensity if needed
         if (audioManager.moodPlaying!=getGameMood()) {
-            Debug.Log("PlaygameMusic mood tickdown");
             playGameMusic();
         }
 
@@ -690,7 +691,7 @@ public class GameManager : MonoBehaviour {
         return enemy;
     }
 
-    public void checkIfLostGame() {
+    public bool checkIfLostGame() {
         if (hp<=0) {
             gameState=GameState.between_games;
             endGameFirstOverlay.SetActive(true);
@@ -717,11 +718,35 @@ public class GameManager : MonoBehaviour {
             audioManager.changeMusicMood(MusicMood.dead);
 
             StartCoroutine(highScoreManager.SaveScore(score));
+            return true;
         }
+        return false;
     }
 
     public void clickHome() {
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+
+    //Reset game state
+    public void clickRetry() {
+        skipTutorialToggle.isOn=true;
+        cardManager.resetDeck();     
+        hideAllContainerImages(); 
+        destroyAllEnemies();  
+        startGame();
+    }
+
+    public void destroyAllEnemies() {
+        List<Enemy> enemiesToRemove = new List<Enemy>();
+        foreach (Enemy enemy in enemies) {
+            enemiesToRemove.Add(enemy);
+        }
+        foreach (Enemy enemyToRemove in enemiesToRemove) {
+            enemies.Remove(enemyToRemove);
+            enemyToRemove.Destroy();
+        }
+        enemies.Clear();
     }
 
     public void clickShop() {
@@ -804,6 +829,7 @@ public class GameManager : MonoBehaviour {
             case CardEnhancement.copy_card:
                 Card newCard=card.cloneCard(cardManager.cardPrefab);
                 cardsInShop.Add(newCard);
+                cardManager.registerCard(newCard);
                 newCard.CardUI.transform.localScale=new Vector3(cardManager.SMALL_CARD_SIZE, cardManager.SMALL_CARD_SIZE, cardManager.SMALL_CARD_SIZE);
             break;
         }
