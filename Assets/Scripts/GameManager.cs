@@ -46,10 +46,20 @@ public class GameManager : MonoBehaviour {
         "I summon monstrosities from your darkest nightmares, and you deign to challenge me with little bits of cardboard?",
         "You might want to stick to rock-paper-scissors.",
         "We're both rule breakers. I tear down the barriers between dimensions. You cheat at internet card games.",
-        //"I've got more trump support than a MAGA rally.",
         "Dealer! Are they allowed to do that?",
         "I saw you pull that ace out of your sleeve.",
-        "This ain't Texas<br>(sung in a gravelly voice)"
+        "This ain't Texas<br>(sung in a gravelly voice)",
+        "I've upgraded my minions. Pray I don't upgrade them further.",
+        "I solemnly swear I am up to no good.",
+        "Give a man a fire and he's warm for a day, but set fire to him and he's warm for the rest of his life.",
+        "There are no stupid answers, just stupid people.",
+        "Trying is the first step towards failure.",
+        "If you think this has a happy ending, you haven't been paying attention.",
+        "When you play Arcane Ante™, you win or you die.",
+        "I'm coming for you.<br>Boom, phrasing.",
+        "Goood. Let the hate flow through you.",
+        "Did you ever hear the tragedy of Darth Plagueis the Wise?",
+        "Good vibes only."
     };
 
     List<string> bluortSpeeches = new List<string>{
@@ -58,7 +68,10 @@ public class GameManager : MonoBehaviour {
         "These fell off the back of a truck",
         "Buy 1 get 1 - and that's cutting my own throat",
         "If you see one-eyed Margaret from Marketing, give her one from me",
-        "I can't fix your poker face, but watch his when you play 5 Aces"
+        "I can't fix your poker face, but watch his when you play 5 Aces",
+        "You break it, you bought it",
+        "You wouldn't steal a car",
+        "No refunds or exchanges",
     };
 
     //Scoring Overlay
@@ -118,6 +131,7 @@ public class GameManager : MonoBehaviour {
     int tempScoreTotalPoints;
     int tempScoreTotal;
     int tempScoreHand;
+    bool tempFirstTimeProcessingScoringAnimation=true;
     HandType tempScoreHandType;
     float tempScoreTimeSinceLastEvent=0f;
     float HUGE_ANIMATED_CARD_SIZE=.8f;
@@ -265,16 +279,25 @@ public class GameManager : MonoBehaviour {
 
             case ScoringAnimation.fade_in:
                 scoreOverlay.SetActive(true);
-                scoreOverlay.GetComponent<Image>().color=Color.Lerp(Color.clear, Color.black, tempScoreTimeSinceLastEvent/1f);
-                if (scoreOverlay.GetComponent<Image>().color==Color.black) {
+                Color black=new Color(0f, 0f, 0f, .93f);
+                scoreOverlay.GetComponent<Image>().color=Color.Lerp(Color.clear, black, tempScoreTimeSinceLastEvent/1f);
+                if (scoreOverlay.GetComponent<Image>().color==black) {
                     nextScoringEvent=true;
                 }
             break;
 
             case ScoringAnimation.hand_fade_in:
+                //Move hand above overlay
                 handObjects = (tempScoreHand==1 ? cardManager.hand1Containers : tempScoreHand==2 ? cardManager.hand2Containers : cardManager.hand3Containers);
                 foreach (GameObject handObject in handObjects) {
                     handObject.transform.SetParent(scoreOverlay.transform);
+                }
+
+                //Move enemy above overlay
+                foreach(Enemy thisEnemy in enemies) {
+                    if (thisEnemy.enemyPosition==(tempScoreHand-1)) {
+                        thisEnemy.EnemyUI.transform.SetParent(scoreOverlay.transform);
+                    }
                 }
                 if (tempScoreTimeSinceLastEvent>.5f) {nextScoringEvent=true;}
             break;
@@ -317,11 +340,14 @@ public class GameManager : MonoBehaviour {
                 float currentScale=Mathf.Lerp(cardManager.SMALL_CARD_SIZE, HUGE_ANIMATED_CARD_SIZE, tempScoreTimeSinceLastEvent/.5f);
                 tempScoreCardsInHand[cardNo].CardUI.transform.localScale=new Vector3(currentScale, currentScale, currentScale);
 
-                if(tempScoreTimeSinceLastEvent>.5f) {
+                if (tempFirstTimeProcessingScoringAnimation) {
                     tempScoreCardPoints+=(int)tempScoreCardsInHand[cardNo].CardScore;
                     tempScoreCardMult+=(int)tempScoreCardsInHand[cardNo].CardMult;
                     scoreCardPoints.text=tempScoreCardPoints.ToString();
                     scoreCardMult.text=tempScoreCardMult.ToString();
+                }
+
+                if(tempScoreTimeSinceLastEvent>.5f) {
                     nextScoringEvent=true;
                     tempScoreCardsInHand[cardNo].CardUI.transform.localScale=new Vector3(cardManager.SMALL_CARD_SIZE, cardManager.SMALL_CARD_SIZE, cardManager.SMALL_CARD_SIZE);
                     if (cardNo<4) {
@@ -398,6 +424,7 @@ public class GameManager : MonoBehaviour {
                     if ((enemy.enemyPosition+1)!=tempScoreHand) {
                         continue;
                     }
+                   enemy.EnemyUI.transform.SetParent(enemyContainers[enemy.enemyPosition].transform);
                    enemy.HP-=tempScoreTotal;
                    enemy.updateUI();
                    if (enemy.HP>0) {
@@ -421,9 +448,11 @@ public class GameManager : MonoBehaviour {
             break;
         }
 
+        tempFirstTimeProcessingScoringAnimation=false;
         if (nextScoringEvent) {
             tempScoreTimeSinceLastEvent=0;
             scoringAnimation++;
+            tempFirstTimeProcessingScoringAnimation=true;;
         }
     }
 

@@ -48,7 +48,8 @@ public class CardManager : MonoBehaviour {
     public List<GameObject> card3NextUpContainers;
     public List<GameObject> nextUpBonusContainers;
 
-    public List<GameObject> nextUpContainers;
+    public List<GameObject> nextUpHolders;
+    public List<GameObject> nextUpHolderBackgrounds;
     public List<GameObject> handContainers = new List<GameObject>();
     public List<GameObject> currentDraftContainers = new List<GameObject>();
     public GameObject currentBonusContainer;
@@ -482,7 +483,13 @@ public class CardManager : MonoBehaviour {
     public void hoveredButton(int targetHand, int cardPicked) {
         float LOW_OPACITY=.1f;
         int containerUpto=0;
-        foreach(GameObject container in nextUpContainers) {
+        foreach(GameObject container in nextUpHolders) {
+            float transLevel=(containerUpto+1==cardPicked ? 1f : LOW_OPACITY);
+            setContainerTrans(container,transLevel);
+            containerUpto++;
+        }
+        containerUpto=0;
+        foreach(GameObject container in nextUpHolderBackgrounds) {
             float transLevel=(containerUpto+1==cardPicked ? 1f : LOW_OPACITY);
             setContainerTrans(container,transLevel);
             containerUpto++;
@@ -503,7 +510,10 @@ public class CardManager : MonoBehaviour {
     
     //Set all button hovers back to normal
     public void unHoveredButton() {
-        foreach(GameObject container in nextUpContainers) {
+        foreach(GameObject container in nextUpHolders) {
+            setContainerTrans(container, 1f);
+        }
+        foreach(GameObject container in nextUpHolderBackgrounds) {
             setContainerTrans(container, 1f);
         }
         foreach(GameObject container in handContainers) {
