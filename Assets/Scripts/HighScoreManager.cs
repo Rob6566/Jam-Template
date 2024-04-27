@@ -42,7 +42,6 @@ public class HighScoreManager: MonoBehaviour {
     const string SCORES_URL="scores.php?game_id=";
     const string ADD_SCORE_URL="add_score.php";
     public GameObject scorePrefab;
-    public GameObject scoreHolder;
     string playerName;
     public TMP_InputField playerNameInput;
     public GameObject invalidName;
@@ -75,7 +74,7 @@ public class HighScoreManager: MonoBehaviour {
     }
 
     //Loads high scores from server
-    public IEnumerator LoadScores() {
+    public IEnumerator LoadScores(GameObject scoreHolder, Color highScoreColor) {
         string uri=SERVER_URL+SCORES_URL+GAME_ID;
         using (UnityWebRequest webRequest = UnityWebRequest.Get(uri))
         {
@@ -112,8 +111,10 @@ public class HighScoreManager: MonoBehaviour {
                         gameObject.transform.localScale=new Vector3(1f, 1f, 1f);
                         TextMeshProUGUI txtName = gameObject.transform.GetChild(0).gameObject.GetComponent<TextMeshProUGUI>();
                             txtName.text=thisScore.name;
+                            txtName.color=highScoreColor;
                         TextMeshProUGUI txtScore = gameObject.transform.GetChild(1).gameObject.GetComponent<TextMeshProUGUI>();
                             txtScore.text=thisScore.score;
+                            txtScore.color=highScoreColor;
                         scoreUpto++;
                     }
                     break;
@@ -126,7 +127,7 @@ public class HighScoreManager: MonoBehaviour {
 
             string tempPlayerName=playerNameInput.text;
             tempPlayerName=tempPlayerName.Trim();
-            if (tempPlayerName.Length>30 || tempPlayerName.Length<2) {
+            if (tempPlayerName.Length>20 || tempPlayerName.Length<2) {
                 invalidName.SetActive(true);
                 return false;
             }

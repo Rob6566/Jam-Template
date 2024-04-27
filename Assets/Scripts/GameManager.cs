@@ -145,14 +145,19 @@ public class GameManager : MonoBehaviour {
     private int shopUsesAvailable=0;
     private int hp=200;
     private int turnUpto=0;
-    private const int START_HP=1; //TODO 200
+    private const int START_HP=200;
     public TextMeshProUGUI scoreText;
     public TextMeshProUGUI hpText;
     private int shopCardSelected=-1;
     private int shopBuffSelected=-1;
 
+    private bool runningTutorial;
+
 
     private List<ScoreHolder> scoreHolders = new List<ScoreHolder>();
+
+    public GameObject splashScoreHolder;
+    public GameObject endGameScoreHolder;
     
 
     //Camera handling
@@ -230,7 +235,7 @@ public class GameManager : MonoBehaviour {
         hideAllContainerImages();
 
         //Load high scores
-        StartCoroutine(highScoreManager.LoadScores());
+        StartCoroutine(highScoreManager.LoadScores(splashScoreHolder, Color.black));
     }
 
     //Handle game loop
@@ -417,7 +422,6 @@ public class GameManager : MonoBehaviour {
                 tempScoreTotalPoints=0;
                 setDraftButtonsActive(true);
                 checkShopVoucherThreshold();
-                playGameMusic();
 
                 List<Enemy> enemiesToRemove = new List<Enemy>();
                 foreach (Enemy enemy in enemies) {
@@ -445,6 +449,8 @@ public class GameManager : MonoBehaviour {
                 tempScoreHand=0;
                 tempScoreTotal=0;
                 updateUI();
+                playGameMusic();
+                showShopIfAvailable();
             break;
         }
 
@@ -575,7 +581,7 @@ public class GameManager : MonoBehaviour {
         score=0;
         shopIncrement=100; 
         nextShopScore=0;
-        shopUsesAvailable=10;
+        shopUsesAvailable=0;
         scoreHolders.Clear();
         checkShopVoucherThreshold();
         for(int i=0; i<Enum.GetNames(typeof(HandType)).Length; i++) {
@@ -625,7 +631,7 @@ public class GameManager : MonoBehaviour {
         hpText.text=hp.ToString();
 
         shopButton.SetActive(shopUsesAvailable>0);
-        shopVouchersTXT.text="Shop vouchers: "+shopUsesAvailable.ToString()+"<br>Next voucher: "+nextShopScore.ToString()+"<br>Turn: "+turnUpto.ToString();
+        shopVouchersTXT.text="Shop vouchers: "+shopUsesAvailable.ToString();
     }
 
     //Tick down the counters on enemies. We don't tick down the one in the hand played
@@ -674,7 +680,16 @@ public class GameManager : MonoBehaviour {
             speechText.text=nemesisSpeeches[UnityEngine.Random.Range(0, nemesisSpeeches.Count)];
             animationManager.animateObjectExpandAndFade(speechbubble, .2f, 1.5f);
         }
+
+        showShopIfAvailable();
+
         updateUI();
+    }
+
+    public void showShopIfAvailable() {
+        if (shopUsesAvailable>0) {
+            clickShop();
+        }
     }
 
     public void spawnEnemies() {
@@ -747,6 +762,7 @@ public class GameManager : MonoBehaviour {
             audioManager.changeMusicMood(MusicMood.dead);
 
             StartCoroutine(highScoreManager.SaveScore(score));
+            Invoke("loadHighScoresAtEndOfGame", 2f); //Load scores after score is saved
             return true;
         }
         return false;
@@ -825,6 +841,7 @@ public class GameManager : MonoBehaviour {
         cardsInShop.Clear();
         buffsInShop.Clear();
         playGameMusic();
+        showShopIfAvailable();
     }
 
     public void enableShopCard() {
@@ -937,6 +954,11 @@ public class GameManager : MonoBehaviour {
     public void playGameMusic() {
         Debug.Log("PlayGameMusic mood");
         audioManager.changeMusicMood(getGameMood());
+    }
+
+    void loadHighScoresAtEndOfGame() {
+        Debug.Log("Load Scores at end of game");
+        StartCoroutine(highScoreManager.LoadScores(endGameScoreHolder, Color.white));
     }
 
 }
