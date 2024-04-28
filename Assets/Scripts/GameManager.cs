@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine.UI;
 
-public enum GameState {paused, picking_card, scoring, between_games};
+public enum GameState {paused, picking_card, scoring, between_games, tutorial};
 public enum ScoringAnimation {about_to_start, fade_in,hand_fade_in, hand_type_fade_in, labels_fade_in, card_numbers_fade_in, card_1_score, card_2_score, card_3_score, card_4_score, card_5_score, hand_points_fade_in, hand_mult_fade_in, total_points_fade_in, total_x_fade_in, total_mult_fade_in, total_fade_in, fade_out, animate_score};
 
 public class GameManager : MonoBehaviour {
@@ -18,6 +18,7 @@ public class GameManager : MonoBehaviour {
     public HighScoreManager highScoreManager;
     public CardManager cardManager;
     public AnimationManager animationManager;
+    public TutorialManager tutorialManager;
     
     public List<GameObject> canvasses = new List<GameObject>();
 
@@ -221,6 +222,8 @@ public class GameManager : MonoBehaviour {
         animationManager.init(this);   
         highScoreManager=GameObject.FindWithTag("HighScoreManager").GetComponent<HighScoreManager>();   
         highScoreManager.init();
+        tutorialManager=GameObject.FindWithTag("TutorialManager").GetComponent<TutorialManager>();   
+        tutorialManager.init(this);
         
         
         cardManager=GameObject.FindWithTag("CardManager").GetComponent<CardManager>();   
@@ -516,16 +519,20 @@ public class GameManager : MonoBehaviour {
         animatePendingAttackTimer=0f;
 
         audioManager.changeMusicMood(MusicMood.start_game);
+        setCanvasStatus("GameCanvas", true);
         if (skipTutorialToggle.isOn) {
-            setCanvasStatus("GameCanvas", true);
             Debug.Log("PlaygameMusic mood gamecanvas startgame");
             audioManager.changeMusicMoodAfterCurrentLoop(MusicMood.game);
             cardManager.dealAllCards();
         }
         else {
-            setCanvasStatus("Tutorial1", true);
+            gameState=GameState.tutorial;
             audioManager.changeMusicMoodAfterCurrentLoop(MusicMood.tutorial);
+            runningTutorial=true;
         }
+
+        tutorialManager.startTutorial();
+        cardManager.dealAllCards();
 
         setCanvasStatus("ControlPanelCanvas", true, false);
         
@@ -542,9 +549,8 @@ public class GameManager : MonoBehaviour {
         setCanvasStatus(canvasTag, true);
     }
 
-    public void skipTutorial() {
-        setActiveCanvas("GameCanvas");
-        cardManager.dealAllCards();
+    public void endTutorial() {
+        gameState=GameState.picking_card;
     }
 
     void setCanvasStatus(string canvasTag, bool newState, bool hideOthers=true) {

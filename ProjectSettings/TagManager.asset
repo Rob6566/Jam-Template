@@ -25,6 +25,7 @@ TagManager:
   - Tutorial3
   - Tutorial2
   - Tutorial1
+  - TutorialManager
   layers:
   - Default
   - TransparentFX
