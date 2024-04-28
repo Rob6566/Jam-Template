@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public enum MusicMood {none, intro, tutorial, game, shop, scoring, dead, intense};
+public enum MusicMood {none, intro, tutorial, game, shop, scoring, dead, intense, very_intense, boss_intro, boss_loop, victory, start_game};
 public enum GameSound {deal, shuffle, flick, score};
 public class AudioManager : MonoBehaviour {
     [SerializeField] AudioSource sfxAudioSource;
@@ -152,6 +152,7 @@ public class AudioManager : MonoBehaviour {
         if (moodPlaying!=mood) {
             desiredMood=mood;
         }
+        desiredMoodAfterEntireLoop=MusicMood.none;
         return barsInNewTrack;
     }
 

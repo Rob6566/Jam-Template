@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 80246770e374941fd95090ed221f19d7, type: 3}
+  m_Name: 7-scoring
+  m_EditorClassIdentifier: 
+  tracks:
+  - {fileID: 8300000, guid: 3f7c0ad07c51f4960ba06089d72f034a, type: 3}
+  - {fileID: 8300000, guid: 7e0b995f9aa0f4c8f8a655ab83bc087b, type: 3}
+  - {fileID: 8300000, guid: 89fa136e2164f4cd5919c8a41b212d87, type: 3}
+  - {fileID: 8300000, guid: 681ee6dae8e1944d2a44fa70d62f4d9e, type: 3}
+  musicMood: 5
+  loopsInTrack: 4
+  gameSound: 0

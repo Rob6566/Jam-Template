@@ -11,7 +11,7 @@ using System.Collections.Generic;
 public enum CardSuit {hearts, diamonds, clubs, spades, all};
 public enum CardRank {A, two, three, four, five, six, seven, eight, nine, ten, J, Q, K};
 public enum CardShader {Glow};
-public enum CardZone {deck, discard, selectable, nextup, hand1, hand2, hand3, shop};
+public enum CardZone {deck, discard, selectable, nextup, hand1, hand2, hand3, shop, all};
 public enum HandType {high_card, pair, two_pair, three_of_a_kind, straight, flush, full_house, four_of_a_kind, straight_flush, five_of_a_kind, full_flush, five_flush};
 public enum CardEnhancement {increase_score, increase_mult, all_suits, remove_card, increase_rank, decrease_rank, copy_card, increase_timer};
 
@@ -80,6 +80,17 @@ public class CardManager : MonoBehaviour {
 
     public GameObject testCard;
     public GameObject testTargetLocation;
+
+
+    /************ Objects for deck overlay ***************/
+    //A label and button for each type of display (all deck, draw, discard)
+    public List<GameObject> lstButtonAllDeck;
+    public List<GameObject> lstButtonDraw;
+    public List<GameObject> lstButtonDiscard;
+
+    public List<TextMeshProUGUI> suitTotals;
+    public List<TextMeshProUGUI> rankTotals;
+    public List<TextMeshProUGUI> tableTotals;
 
     public void init(GameManager newGameManager) {
         gameManager=newGameManager;
@@ -321,6 +332,11 @@ public class CardManager : MonoBehaviour {
 
         Card thisCard=deck[0];
         deck.Remove(thisCard);
+
+        if (deck.Count==0) { //An empty deck looks shit - shuffle it
+            shuffleDiscardIntoDeck();
+        }
+
         return thisCard;
     }
 
@@ -565,5 +581,85 @@ public class CardManager : MonoBehaviour {
         nextUp3DraftCards.Clear();
 
         generateInitialDeck();
+    }
+
+    public void loadDeckStats(CardZone zone) {
+        List<int> suitTotalList=new List<int>();
+        List<int> rankTotalList=new List<int>();
+
+        CardZone zoneToShow=CardZone.all;
+        if (zone==CardZone.deck) {
+            zoneToShow=CardZone.deck;
+        }
+        else if (zone==CardZone.discard) {
+            zoneToShow=CardZone.discard;
+        }
+
+        //Initialise card lists
+        List<List<int>> allCards=new List<List<int>>();
+        for(int suit=0; suit<4; suit++) {
+            List<int> suitCards=new List<int>();
+            suitTotalList.Add(0);
+            Debug.Log("Suit=adding "+suit);
+            for(int rank=0; rank<Enum.GetNames(typeof(CardRank)).Length; rank++) {
+                suitCards.Add(0);
+                if (suit==0) {
+                    rankTotalList.Add(0);
+                }
+            }
+            allCards.Add(suitCards);
+        }
+
+        //Loop through cards and figure out how much of each we have
+        foreach(Card card in this.allCards) {
+            if (zoneToShow!=CardZone.all && card.CardZone!=zoneToShow) {
+                continue;
+            }
+
+            if(card.CardSuit==CardSuit.all) {
+                for(int suit=0; suit<4; suit++) {
+                    allCards[suit][(int)card.cardRank]++;
+                    suitTotalList[suit]++;
+                }   
+            }
+            else {
+                allCards[(int)card.CardSuit][(int)card.cardRank]++;
+                suitTotalList[(int)card.CardSuit]++;
+            }
+            rankTotalList[(int)card.cardRank]++;
+        }
+
+        //Add label texts
+        for(int suit=0; suit<4; suit++) {
+            for(int rank=0; rank<Enum.GetNames(typeof(CardRank)).Length; rank++) {
+                int totalTxtIndex=suit*Enum.GetNames(typeof(CardRank)).Length+rank;
+                
+                tableTotals[totalTxtIndex].text=allCards[suit][rank].ToString();
+                rankTotals[rank].text=rankTotalList[rank].ToString();
+            }
+            Debug.Log("Suit="+suit+" total="+suitTotalList[suit]);
+            suitTotals[suit].text=suitTotalList[suit].ToString();
+        }
+
+        //Show/hide "tab" button/labels
+        lstButtonAllDeck[0].SetActive(zoneToShow==CardZone.all);
+        lstButtonAllDeck[1].SetActive(zoneToShow!=CardZone.all);
+        lstButtonDraw[0].SetActive(zoneToShow==CardZone.deck);
+        lstButtonDraw[1].SetActive(zoneToShow!=CardZone.deck);
+        lstButtonDiscard[0].SetActive(zoneToShow==CardZone.discard);
+        lstButtonDiscard[1].SetActive(zoneToShow!=CardZone.discard);
+    }
+
+    public void removeCard(Card card) {
+        allCards.Remove(card);
+        deck.Remove(card);
+        discard.Remove(card);
+        hand1.Remove(card);
+        hand2.Remove(card);
+        hand3.Remove(card);
+        currentDraftCards.Remove(card);
+        nextUp1DraftCards.Remove(card);
+        nextUp2DraftCards.Remove(card);
+        nextUp3DraftCards.Remove(card);
     }
 }

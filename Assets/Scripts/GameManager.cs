@@ -107,6 +107,9 @@ public class GameManager : MonoBehaviour {
     public GameObject endGameTXTMostPlayedHand;
     public GameObject endGameHomeButton;
 
+    //Deck Overlay
+    public GameObject deckOverlay;
+
     //Shop controls
     public GameObject shopButton;
     public GameObject shopOverlay;
@@ -481,6 +484,7 @@ public class GameManager : MonoBehaviour {
             cardContainer.GetComponent<Image>().enabled=false;
         }
         scoreOverlay.SetActive(false);
+        deckOverlay.SetActive(false);
         endGameFirstOverlay.SetActive(false);
         cardManager.hideAllContainerImages();
     }
@@ -511,15 +515,16 @@ public class GameManager : MonoBehaviour {
         shopOverlay.SetActive(false);
         animatePendingAttackTimer=0f;
 
+        audioManager.changeMusicMood(MusicMood.start_game);
         if (skipTutorialToggle.isOn) {
             setCanvasStatus("GameCanvas", true);
             Debug.Log("PlaygameMusic mood gamecanvas startgame");
-            playGameMusic();
+            audioManager.changeMusicMoodAfterCurrentLoop(MusicMood.game);
             cardManager.dealAllCards();
         }
         else {
             setCanvasStatus("Tutorial1", true);
-            audioManager.changeMusicMood(MusicMood.tutorial);
+            audioManager.changeMusicMoodAfterCurrentLoop(MusicMood.tutorial);
         }
 
         setCanvasStatus("ControlPanelCanvas", true, false);
@@ -581,7 +586,7 @@ public class GameManager : MonoBehaviour {
         score=0;
         shopIncrement=100; 
         nextShopScore=0;
-        shopUsesAvailable=0;
+        shopUsesAvailable=10;
         scoreHolders.Clear();
         checkShopVoucherThreshold();
         for(int i=0; i<Enum.GetNames(typeof(HandType)).Length; i++) {
@@ -864,6 +869,7 @@ public class GameManager : MonoBehaviour {
             break;
             case CardEnhancement.remove_card:
                 cardsInShop.Remove(card);
+                cardManager.removeCard(card);
                 card.Destroy();
             break;
             case CardEnhancement.increase_rank:
@@ -943,8 +949,17 @@ public class GameManager : MonoBehaviour {
 
     public MusicMood getGameMood() {
         MusicMood mood=MusicMood.game;
+
+        if (shopOverlay.activeSelf) {
+            mood=MusicMood.shop;
+        }   
+
         foreach (Enemy enemy in enemies) {
-            if (enemy.turnsUntilAttack<5) {
+            if (enemy.turnsUntilAttack<3) {
+                mood=MusicMood.very_intense;
+                break;
+            }
+            else if (enemy.turnsUntilAttack<5) {
                 mood=MusicMood.intense;
             }
         }
@@ -961,5 +976,30 @@ public class GameManager : MonoBehaviour {
         StartCoroutine(highScoreManager.LoadScores(endGameScoreHolder, Color.white));
     }
 
+    public void clickDeck() {
+        deckOverlay.SetActive(!deckOverlay.activeSelf);
+        if (deckOverlay.activeSelf) {
+            cardManager.loadDeckStats(CardZone.all);
+        }
+    }
+
+    public void clickViewAllDeck() {
+        deckOverlay.SetActive(true);
+        cardManager.loadDeckStats(CardZone.all);
+    }
+    
+    public void clickViewDraw() {
+        deckOverlay.SetActive(true);
+        cardManager.loadDeckStats(CardZone.deck);
+    }
+
+    public void clickViewDiscard() {
+        deckOverlay.SetActive(true);
+        cardManager.loadDeckStats(CardZone.discard);
+    }
+    
+    public void clickCloseDeckOverlay() {
+        deckOverlay.SetActive(false);
+    }
 }
 
