@@ -91,6 +91,7 @@ public class CardManager : MonoBehaviour {
     public List<TextMeshProUGUI> suitTotals;
     public List<TextMeshProUGUI> rankTotals;
     public List<TextMeshProUGUI> tableTotals;
+    public TextMeshProUGUI TXTtotalCards;
 
     public void init(GameManager newGameManager) {
         gameManager=newGameManager;
@@ -253,6 +254,7 @@ public class CardManager : MonoBehaviour {
     }
 
     public void dealAllCards() {
+        Debug.Log("ZZZ Deal all cards");
         foreach(GameObject draftContainer in currentDraftContainers) {
             Card thisCard=deck[0];
             thisCard.setZone(CardZone.selectable);
@@ -287,7 +289,7 @@ public class CardManager : MonoBehaviour {
         //Tick down enemies
         gameManager.tickDownEnemies(mostRecentHandDrafted-1);
 
-
+        Debug.Log("ZZZ Deal next up cards");
         foreach(GameObject draftContainer in card1NextUpContainers) {
             Card thisCard=drawCard();
             thisCard.setZone(CardZone.nextup);
@@ -397,6 +399,7 @@ public class CardManager : MonoBehaviour {
     }
 
     public void draftCardToHand(int hand, int cardPicked) {
+             gameManager.tutorialManager.draftedCard();
              gameManager.audioManager.playSound(GameSound.flick, 1f);
              mostRecentHandDrafted=hand;
              
@@ -566,6 +569,7 @@ public class CardManager : MonoBehaviour {
         Debug.Log("Resestting deck - cards="+allCards.Count);
         
         foreach(Card card in allCards) {
+            Debug.Log("Deleting card "+card.cardName);
             card.Destroy();
         }
 
@@ -611,10 +615,12 @@ public class CardManager : MonoBehaviour {
         }
 
         //Loop through cards and figure out how much of each we have
+        int cardCount=0;
         foreach(Card card in this.allCards) {
             if (zoneToShow!=CardZone.all && card.CardZone!=zoneToShow) {
                 continue;
             }
+            cardCount++;
 
             if(card.CardSuit==CardSuit.all) {
                 for(int suit=0; suit<4; suit++) {
@@ -640,6 +646,8 @@ public class CardManager : MonoBehaviour {
             Debug.Log("Suit="+suit+" total="+suitTotalList[suit]);
             suitTotals[suit].text=suitTotalList[suit].ToString();
         }
+
+        TXTtotalCards.text=cardCount.ToString();
 
         //Show/hide "tab" button/labels
         lstButtonAllDeck[0].SetActive(zoneToShow==CardZone.all);

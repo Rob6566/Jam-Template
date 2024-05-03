@@ -20,7 +20,7 @@ public class AudioManager : MonoBehaviour {
     public List<AudioSource> audioSources = new List<AudioSource>();
 
     public MusicMood moodPlaying = MusicMood.none;
-    MusicMood desiredMood = MusicMood.none;
+    public MusicMood desiredMood = MusicMood.none;
     MusicMood desiredMoodAfterEntireLoop = MusicMood.none;
     bool testRunning;
     double nextStartTime;
@@ -36,7 +36,7 @@ public class AudioManager : MonoBehaviour {
             return;
         }
 
-        if (AudioSettings.dspTime > (nextLoopTime - .5f)) {
+        if (AudioSettings.dspTime > (nextLoopTime - .1f)) {
             if (desiredMood!=MusicMood.none && desiredMood != moodPlaying) {
                 nextStartTime=nextLoopTime;
             }
@@ -46,7 +46,7 @@ public class AudioManager : MonoBehaviour {
         }
 
         //Prepare our next track if we're in the last half second of the current one
-        if (AudioSettings.dspTime > (nextStartTime - .5f)) {
+        if (AudioSettings.dspTime > (nextStartTime - .1f)) {
             audioSources[selectedAudioSource].SetScheduledEndTime(nextStartTime);
             selectedAudioSource = 1 - selectedAudioSource; //Swap the audio source
 

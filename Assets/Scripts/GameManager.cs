@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine.UI;
 
-public enum GameState {paused, picking_card, scoring, between_games, tutorial};
+public enum GameState {paused, picking_card, scoring, between_games, tutorial, boss};
 public enum ScoringAnimation {about_to_start, fade_in,hand_fade_in, hand_type_fade_in, labels_fade_in, card_numbers_fade_in, card_1_score, card_2_score, card_3_score, card_4_score, card_5_score, hand_points_fade_in, hand_mult_fade_in, total_points_fade_in, total_x_fade_in, total_mult_fade_in, total_fade_in, fade_out, animate_score};
 
 public class GameManager : MonoBehaviour {
@@ -38,7 +38,23 @@ public class GameManager : MonoBehaviour {
     [SerializeField]
     List<EnemySO> enemySOs;
 
-    public GameObject nemesis;
+
+    //Boss stuff
+    public GameObject bossObject;
+    public GameObject bossAttackContainer;
+    public GameObject bossFinalSpeech;
+    public GameObject bossHighlighter;
+    Transform bossHighligherParent;
+    Vector3 bossHighlighterPosition;
+    Vector3 bossHighlighterScale;
+    
+
+    public EnemySO bossSO;
+    Vector3 bossScale;
+    Vector3 bossPosition;
+    Transform bossContainer;
+
+
     public GameObject speechbubble;
     public TextMeshProUGUI speechText;
     int hideEnemySpeechInXRounds=0;
@@ -93,7 +109,7 @@ public class GameManager : MonoBehaviour {
 
 
     
-    //End Game Overlay
+    //End Game Overlay;
     public GameObject endGameFirstOverlay;
     public GameObject endGameSecondOverlay;
     public GameObject endGameTXTGameOver;
@@ -144,18 +160,31 @@ public class GameManager : MonoBehaviour {
 
     private int score=0;
     private int nextShopScore=0;
-    private int shopIncrement=0;
-    private int SHOP_INCREMENT_INCREASE=20;
+    private int shopIncrement=0;    
     private int shopUsesAvailable=0;
     private int hp=200;
     private int turnUpto=0;
+    private int SHOP_INCREMENT_INCREASE=20;
     private const int START_HP=200;
+    private const int MAX_TURNS=100;
     public TextMeshProUGUI scoreText;
     public TextMeshProUGUI hpText;
+    public TextMeshProUGUI turnText;
     private int shopCardSelected=-1;
     private int shopBuffSelected=-1;
 
+
+    //Quick game speed
+    private int BOSS_START_HP=5000;
+    private int BOSS_START_TIMER=25;
+    private int BOSS_SPAWN_TURN=50;
+
     private bool runningTutorial;
+    private bool animatingScoring=false;
+
+    //Boss
+    public GameObject bossHP;
+    public GameObject bossTimer;
 
 
     private List<ScoreHolder> scoreHolders = new List<ScoreHolder>();
@@ -216,6 +245,14 @@ public class GameManager : MonoBehaviour {
         UIcamera.enabled=false;
         UIcamera.enabled=true;
 
+        bossScale=bossObject.transform.localScale;
+        bossPosition=bossObject.transform.localPosition;
+        bossContainer=bossObject.transform.parent;
+
+        bossHighligherParent=bossHighlighter.transform.parent;
+        bossHighlighterPosition=bossHighlighter.transform.localPosition;
+        bossHighlighterScale=bossHighlighter.transform.localScale;
+
         //Link up managers
         audioManager=GameObject.FindWithTag("AudioManager").GetComponent<AudioManager>();   
         animationManager=GameObject.FindWithTag("AnimationManager").GetComponent<AnimationManager>();
@@ -255,7 +292,7 @@ public class GameManager : MonoBehaviour {
             return;
         }
 
-        if (gameState==GameState.scoring) {
+        if (animatingScoring) {
             updateScoring();            
         }
 
@@ -285,7 +322,10 @@ public class GameManager : MonoBehaviour {
             case ScoringAnimation.about_to_start:
                 nextScoringEvent=true;
                 setDraftButtonsActive(false);
-                audioManager.changeMusicMood(MusicMood.scoring);
+                if (gameState!=GameState.boss) {
+                    audioManager.changeMusicMood(MusicMood.scoring);
+                }
+                
             break;
 
             case ScoringAnimation.fade_in:
@@ -310,6 +350,8 @@ public class GameManager : MonoBehaviour {
                         thisEnemy.EnemyUI.transform.SetParent(scoreOverlay.transform);
                     }
                 }
+                bossObject.transform.SetParent(scoreOverlay.transform);
+                bossObject.transform.SetAsFirstSibling();
                 if (tempScoreTimeSinceLastEvent>.5f) {nextScoringEvent=true;}
             break;
 
@@ -418,9 +460,7 @@ public class GameManager : MonoBehaviour {
                 score+=tempScoreTotal;
                 scoreHolders[(int)tempScoreHandType].numberOfTimesScored++;
                 scoreHolders[(int)tempScoreHandType].scoreGainedFromType+=tempScoreTotal;
-                gameState=GameState.picking_card;
                 cardManager.discardHand(tempScoreHand);
-                cardManager.dealNextUpCards();
                 tempScoreCardPoints=0;
                 tempScoreCardMult=0;
                 tempScoreHandPoints=0;
@@ -431,32 +471,43 @@ public class GameManager : MonoBehaviour {
 
                 List<Enemy> enemiesToRemove = new List<Enemy>();
                 foreach (Enemy enemy in enemies) {
-                    if ((enemy.enemyPosition+1)!=tempScoreHand) {
+                    if (gameState!=GameState.boss && (enemy.enemyPosition+1)!=tempScoreHand) {
                         continue;
                     }
                    enemy.EnemyUI.transform.SetParent(enemyContainers[enemy.enemyPosition].transform);
                    enemy.HP-=tempScoreTotal;
                    enemy.updateUI();
                    if (enemy.HP>0) {
-                    enemy.animateHP();
+                        enemy.animateHP();
                    }
                    if (enemy.HP<=0) {
-                      enemiesToRemove.Add(enemy);
+                        enemiesToRemove.Add(enemy);
                    }
                    break;
                 }
 
                 foreach (Enemy enemyToRemove in enemiesToRemove) {
-                    animationManager.animateObjectExpandAndFade(enemyToRemove.EnemyUI, 1f, 5f);
                     enemies.Remove(enemyToRemove);
+                    if (gameState==GameState.boss) {
+                        scoringAnimation++;
+                        
+                        winGame();
+                        return;
+                    }
+                    animationManager.animateObjectExpandAndFade(enemyToRemove.EnemyUI, 1f, 5f);
                     enemyToRemove.Destroy();
                     scoreHolders[(int)tempScoreHandType].monstersKilledWithHandType++;
                 }
+
+                bossObject.transform.SetParent(bossAttackContainer.transform);
+
                 tempScoreHand=0;
                 tempScoreTotal=0;
                 updateUI();
-                playGameMusic();
+                playGameMusic(true);
+                cardManager.dealNextUpCards();
                 showShopIfAvailable();
+                animatingScoring=false;
             break;
         }
 
@@ -516,25 +567,39 @@ public class GameManager : MonoBehaviour {
         initScore();
         speechbubble.SetActive(false);
         shopOverlay.SetActive(false);
+        bossHP.SetActive(false);
+        bossTimer.SetActive(false);
+        bossFinalSpeech.SetActive(false);
+        bossHighlighter.SetActive(false);
+        bossHighlighter.transform.localScale=new Vector3(5f, 5f, 5f);
+
+        SHOP_INCREMENT_INCREASE=10;
+        BOSS_SPAWN_TURN=5;
+        BOSS_START_HP=100;
+        BOSS_START_TIMER=25;
+
         animatePendingAttackTimer=0f;
 
         audioManager.changeMusicMood(MusicMood.start_game);
         setCanvasStatus("GameCanvas", true);
         if (skipTutorialToggle.isOn) {
-            Debug.Log("PlaygameMusic mood gamecanvas startgame");
+            Debug.Log("STARTGAME No tutorial");
             audioManager.changeMusicMoodAfterCurrentLoop(MusicMood.game);
-            cardManager.dealAllCards();
+            tutorialManager.skipTutorial();
         }
         else {
+            Debug.Log("STARTGAME Tutorial running");
             gameState=GameState.tutorial;
             audioManager.changeMusicMoodAfterCurrentLoop(MusicMood.tutorial);
             runningTutorial=true;
+            tutorialManager.startTutorial();
         }
 
-        tutorialManager.startTutorial();
         cardManager.dealAllCards();
 
         setCanvasStatus("ControlPanelCanvas", true, false);
+
+        animationManager.deleteAllAnimations();
         
 
         updateUI();
@@ -549,8 +614,13 @@ public class GameManager : MonoBehaviour {
         setCanvasStatus(canvasTag, true);
     }
 
-    public void endTutorial() {
+    public void endTutorial(bool beforeGotFreeUpgrade) {
+        if (beforeGotFreeUpgrade) {
+            shopUsesAvailable++;
+            showShopIfAvailable();
+        }
         gameState=GameState.picking_card;
+        runningTutorial=false;
     }
 
     void setCanvasStatus(string canvasTag, bool newState, bool hideOthers=true) {
@@ -592,7 +662,7 @@ public class GameManager : MonoBehaviour {
         score=0;
         shopIncrement=100; 
         nextShopScore=0;
-        shopUsesAvailable=10;
+        shopUsesAvailable=-1;
         scoreHolders.Clear();
         checkShopVoucherThreshold();
         for(int i=0; i<Enum.GetNames(typeof(HandType)).Length; i++) {
@@ -611,7 +681,7 @@ public class GameManager : MonoBehaviour {
 
     public void scoreHand(int handNo, HandSO handSO, List<Card> cardsInHand) {
 
-        gameState=GameState.scoring;
+        animatingScoring=true;
         scoringAnimation=ScoringAnimation.about_to_start;
         tempScoreTimeSinceLastEvent=0f;
         tempScoreCardsInHand=cardsInHand;
@@ -642,69 +712,130 @@ public class GameManager : MonoBehaviour {
         hpText.text=hp.ToString();
 
         shopButton.SetActive(shopUsesAvailable>0);
-        shopVouchersTXT.text="Shop vouchers: "+shopUsesAvailable.ToString();
+        shopVouchersTXT.text="Shop vouchers: "+(shopUsesAvailable+1).ToString();
+        turnText.text="Turn<br>"+turnUpto.ToString()+"/"+BOSS_SPAWN_TURN.ToString();
     }
 
     //Tick down the counters on enemies. We don't tick down the one in the hand played
     public void tickDownEnemies(int enemyToExclude) {
+        if (runningTutorial) {
+            return;
+        }
+
         turnUpto++;
+        bool spawningBoss=false;
+        if (turnUpto>=BOSS_SPAWN_TURN && gameState!=GameState.boss) {
+            gameState=GameState.boss;
+            audioManager.changeMusicMood(MusicMood.boss_intro);
+            Invoke("startBossMusicLoop", 3f);
+            Invoke("finishBossAnimation", 8f);
+            speechbubble.SetActive(false);
+            bossFinalSpeech.SetActive(true);
+            cardManager.unHoveredButton();
+            cardManager.deckContainer.SetActive(false);
+
+            Enemy boss = new Enemy();
+            boss.init(this, bossSO, bossObject, 1);
+            boss.HP=BOSS_START_HP;
+            boss.turnsUntilAttack=BOSS_START_TIMER;
+            boss.updateUI();
+
+            foreach (Enemy enemy in enemies) {
+                enemy.HP=0;
+            }
+            enemies.Add(boss);
+            spawningBoss=true;
+        }
+
+
         spawnEnemies();
         List<Enemy> enemiesToRemove = new List<Enemy>();
         Debug.Log("Tick down enemies, excluding "+enemyToExclude);
         foreach (Enemy enemy in enemies) {
-            if (enemy.enemyPosition==enemyToExclude) {
-                Debug.Log("Tick down - skipped enemy "+enemy.enemyPosition);
-                continue;
+            if (enemy.enemyPosition!=enemyToExclude && enemy.HP>0) {
+                enemy.turnsUntilAttack--;
+                enemy.animateTimer();
             }
-            enemy.turnsUntilAttack--;
+            
             enemy.updateUI();
-            enemy.animateTimer();
-            if (enemy.turnsUntilAttack<=0) {
+            if (enemy.turnsUntilAttack<=0 && enemy.HP>0) {
                 //TODO - animate
+
                 hp-=enemy.HP;
+                enemy.HP=0;
+                animationManager.animateObjectExpandAndFade(enemy.EnemyUI, 1f, 5f);
                 updateUI();
                 if (checkIfLostGame()) {
                     return;
                 }
+            }
+            if (enemy.HP<=0) {
                 enemiesToRemove.Add(enemy);
             }
         }
+
         foreach (Enemy enemyToRemove in enemiesToRemove) {
             enemies.Remove(enemyToRemove);
             enemyToRemove.Destroy();
         }
 
-        //Switch music intensity if needed
-        if (audioManager.moodPlaying!=getGameMood()) {
-            playGameMusic();
+        if(spawningBoss) {
+            bossHP.SetActive(true);
+            bossTimer.SetActive(true);
+            Invoke("startBossAnimation", 6f);
+            tutorialManager.buttons.SetActive(false);   
+            //animationManager.animateObject(bossObject, bossAttackContainer, new Vector3(610.5352f+96f-140f/*755f*//*-101f*/, 487.7401f/*900f*//*-855.414f*/, 0f), new Vector3(2.5f, 2.5f, 2.5f), 5f);
+            bossHighlighter.SetActive(true);
+            
+            animationManager.animateObjectExpandAndFade(bossHighlighter, 3f, .18f, 1f, 1f, false, false);
         }
+
+        //Switch music intensity if needed
+        playGameMusic();
 
 
         //Enemy Speech
-        hideEnemySpeechInXRounds--;
-        if (hideEnemySpeechInXRounds<0) {
-            speechbubble.SetActive(false);
-        }
-        if(hideEnemySpeechInXRounds<-3 && UnityEngine.Random.Range(0, 100)>50) {
-            hideEnemySpeechInXRounds=2;
-            speechbubble.SetActive(true);
-            speechText.text=nemesisSpeeches[UnityEngine.Random.Range(0, nemesisSpeeches.Count)];
-            animationManager.animateObjectExpandAndFade(speechbubble, .2f, 1.5f);
+        if (gameState!=GameState.boss) {
+            hideEnemySpeechInXRounds--;
+            if (hideEnemySpeechInXRounds<0) {
+                speechbubble.SetActive(false);
+            }
+            if(hideEnemySpeechInXRounds<-3 && UnityEngine.Random.Range(0, 100)>50) {
+                hideEnemySpeechInXRounds=2;
+                speechbubble.SetActive(true);
+                speechText.text=nemesisSpeeches[UnityEngine.Random.Range(0, nemesisSpeeches.Count)];
+            }
+            showShopIfAvailable();
         }
 
-        showShopIfAvailable();
 
         updateUI();
     }
 
+    void startBossMusicLoop() {
+        audioManager.changeMusicMoodAfterCurrentLoop(MusicMood.boss_loop);
+    }
+
+    void startBossAnimation() {
+        animationManager.animateObject(bossObject, bossAttackContainer, new Vector3(610.5352f+96f-140f/*755f*//*-101f*/, 487.7401f/*900f*//*-855.414f*/, 0f), new Vector3(2.5f, 2.5f, 2.5f), 2f);
+        animationManager.animateObjectExpandAndFade(bossHighlighter, 2f, 10f, 1f, 1f, false, false);
+        bossFinalSpeech.SetActive(false);
+    }
+
+    void finishBossAnimation() {
+        tutorialManager.buttons.SetActive(true);   
+        bossHighlighter.SetActive(false);
+        cardManager.deckContainer.SetActive(true);
+    }
+
     public void showShopIfAvailable() {
-        if (shopUsesAvailable>0) {
+        if (shopUsesAvailable>0 && gameState!=GameState.boss) {
             clickShop();
         }
     }
 
     public void spawnEnemies() {
-        if (enemies.Count>2) {
+        if (enemies.Count>2 || gameState==GameState.boss) {
             return;
         }
 
@@ -746,37 +877,57 @@ public class GameManager : MonoBehaviour {
         return enemy;
     }
 
+    public void winGame() {
+        audioManager.changeMusicMood(MusicMood.victory);
+        endGameTXTGameOver.GetComponent<TextMeshProUGUI>().text="<color=green>Victory!</color>";
+        endGame();   
+    }
+
     public bool checkIfLostGame() {
         if (hp<=0) {
-            gameState=GameState.between_games;
-            endGameFirstOverlay.SetActive(true);
-            endGameTXTScore.GetComponent<TextMeshProUGUI>().text=score+" points";
-            endGameTXTCardsDrafted.GetComponent<TextMeshProUGUI>().text=turnUpto.ToString();
-
-            int enemiesUnsummoned=0;
-            HandType mostPlayedHand=HandType.high_card;
-            int mostPlayedHandCount=0;
-            int handsPlayed=0;
-            foreach(ScoreHolder scoreHolder in scoreHolders) {
-                enemiesUnsummoned+=scoreHolder.monstersKilledWithHandType;
-                handsPlayed+=scoreHolder.numberOfTimesScored;
-                if (scoreHolder.numberOfTimesScored>mostPlayedHandCount) {
-                    mostPlayedHand=scoreHolder.handType;
-                    mostPlayedHandCount=scoreHolder.numberOfTimesScored;
-                }
-            }
-
-            endGameTXTHandsPlayed.GetComponent<TextMeshProUGUI>().text=handsPlayed.ToString();
-            endGameTXTEnemiesUnsummoned.GetComponent<TextMeshProUGUI>().text=enemiesUnsummoned.ToString();
-            endGameTXTMostPlayedHand.GetComponent<TextMeshProUGUI>().text=cardManager.getHandTypeName(mostPlayedHand);
-
+            endGameTXTGameOver.GetComponent<TextMeshProUGUI>().text="<color=#ffffff>Game Over</color>";
             audioManager.changeMusicMood(MusicMood.dead);
+            endGame();
 
-            StartCoroutine(highScoreManager.SaveScore(score));
-            Invoke("loadHighScoresAtEndOfGame", 2f); //Load scores after score is saved
             return true;
         }
         return false;
+    }
+
+    private void endGame() {
+        gameState=GameState.between_games;
+        endGameFirstOverlay.SetActive(true);
+        endGameTXTScore.GetComponent<TextMeshProUGUI>().text=score+" points";
+        endGameTXTCardsDrafted.GetComponent<TextMeshProUGUI>().text=turnUpto.ToString();
+        int enemiesUnsummoned=0;
+        HandType mostPlayedHand=HandType.high_card;
+        int mostPlayedHandCount=0;
+        int handsPlayed=0;
+        foreach(ScoreHolder scoreHolder in scoreHolders) {
+            enemiesUnsummoned+=scoreHolder.monstersKilledWithHandType;
+            handsPlayed+=scoreHolder.numberOfTimesScored;
+            if (scoreHolder.numberOfTimesScored>mostPlayedHandCount) {
+                mostPlayedHand=scoreHolder.handType;
+                mostPlayedHandCount=scoreHolder.numberOfTimesScored;
+            }
+        }
+
+        endGameTXTHandsPlayed.GetComponent<TextMeshProUGUI>().text=handsPlayed.ToString();
+        endGameTXTEnemiesUnsummoned.GetComponent<TextMeshProUGUI>().text=enemiesUnsummoned.ToString();
+        endGameTXTMostPlayedHand.GetComponent<TextMeshProUGUI>().text=cardManager.getHandTypeName(mostPlayedHand);
+
+        bossObject.transform.SetParent(bossContainer.transform);
+        bossObject.transform.localScale=bossScale;
+        bossObject.transform.localPosition=bossPosition;
+
+        bossHighlighter.transform.SetParent(bossHighligherParent);
+        bossHighlighter.transform.localPosition=bossHighlighterPosition;
+        bossHighlighter.transform.localScale=bossHighlighterScale;
+        
+
+        StartCoroutine(highScoreManager.SaveScore(score));
+        Invoke("loadHighScoresAtEndOfGame", 2f); //Load scores after score is saved
+
     }
 
     public void clickHome() {
@@ -851,7 +1002,7 @@ public class GameManager : MonoBehaviour {
         }
         cardsInShop.Clear();
         buffsInShop.Clear();
-        playGameMusic();
+        playGameMusic(true);
         showShopIfAvailable();
     }
 
@@ -894,6 +1045,7 @@ public class GameManager : MonoBehaviour {
         }
 
         clickSkipShop();
+        tutorialManager.clickedApplyUpgrade();
     }
 
     public void clickedShopObject(bool isCard, int cardPicked) {
@@ -956,6 +1108,14 @@ public class GameManager : MonoBehaviour {
     public MusicMood getGameMood() {
         MusicMood mood=MusicMood.game;
 
+        if (gameState==GameState.boss) {
+            return MusicMood.boss_loop;
+        }   
+        
+        if (runningTutorial) {
+            return MusicMood.tutorial;
+        }   
+
         if (shopOverlay.activeSelf) {
             mood=MusicMood.shop;
         }   
@@ -972,8 +1132,15 @@ public class GameManager : MonoBehaviour {
         return mood;
     }
 
-    public void playGameMusic() {
+    public void playGameMusic(bool forceMood=false) {
         Debug.Log("PlayGameMusic mood");
+        if (forceMood) {
+
+        }
+        else if (audioManager.moodPlaying==MusicMood.boss_intro || audioManager.desiredMood==MusicMood.boss_intro || audioManager.moodPlaying==MusicMood.intro ) {
+            return;
+        }
+
         audioManager.changeMusicMood(getGameMood());
     }
 
@@ -987,6 +1154,7 @@ public class GameManager : MonoBehaviour {
         if (deckOverlay.activeSelf) {
             cardManager.loadDeckStats(CardZone.all);
         }
+        tutorialManager.clickedDeck();
     }
 
     public void clickViewAllDeck() {
@@ -1006,6 +1174,12 @@ public class GameManager : MonoBehaviour {
     
     public void clickCloseDeckOverlay() {
         deckOverlay.SetActive(false);
+        tutorialManager.closedDeck();
+    }
+
+    public void addStoreCreditForTutorial() {
+        shopUsesAvailable=1;
+        showShopIfAvailable();
     }
 }
 

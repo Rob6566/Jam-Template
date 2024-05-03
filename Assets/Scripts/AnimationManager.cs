@@ -19,6 +19,19 @@ public class AnimationManager : MonoBehaviour {
         gameManager=newGameManager;
     }
 
+    public void deleteAllAnimations() {
+        foreach (AnimatedObject animatedObject in animatedObjects) {
+            if (animatedObject.gameObject!=null) {
+                UnityEngine.Object.Destroy(animatedObject.gameObject);
+            }
+        }
+        animatedObjects.Clear();
+
+        foreach(Transform child in animationContainer.transform) {
+            Destroy(child.gameObject);
+        }   
+    }
+
     void Update() {
         if (gameManager.GameState==GameState.paused) {
             return;
@@ -31,51 +44,59 @@ public class AnimationManager : MonoBehaviour {
                 }
 
                 animatedObject.timeSpent+=(Time.deltaTime*gameManager.AnimationSpeed);
+                CanvasGroup canvasGroup=animatedObject.gameObject.GetComponent<CanvasGroup>();
                 if (animatedObject.timeSpent>=animatedObject.totalTime) {
                     if (animatedObject.expandAndFade) {
-                        animatedObject.gameObject.SetActive(false);
-                        UnityEngine.Object.Destroy(animatedObject.gameObject);
+                        canvasGroup.alpha=animatedObject.endAlpha;
+                        if (animatedObject.destroyOnFinish) {
+                            animatedObject.gameObject.SetActive(false);
+                            UnityEngine.Object.Destroy(animatedObject.gameObject);
+                        }
                     }
                     else {
-                        animatedObject.gameObject.transform.position=animatedObject.targetPosition;
+                        animatedObject.gameObject.transform.localPosition=animatedObject.targetPosition;
                         animatedObject.gameObject.transform.localScale=animatedObject.endScale;
-                        animatedObject.gameObject.transform.SetParent(animatedObject.targetParent.transform, true);
+                        if (animatedObject.targetParent!=null) {
+                            animatedObject.gameObject.transform.SetParent(animatedObject.targetParent.transform, true);
+                        }
                     }
+//                    Debug.Log("Finished animating "+animatedObject.gameObject.name+" to "+animatedObject.targetParent.name+" in "+animatedObject.timeSpent+" seconds");
                     objectsToRemove.Add(animatedObject);
                 }
                 else {
                     if (animatedObject.expandAndFade) {
                         float lerpValue = animatedObject.timeSpent/animatedObject.totalTime;
                         animatedObject.gameObject.transform.localScale=Vector3.Lerp(animatedObject.startScale, animatedObject.endScale, lerpValue);
-                        CanvasGroup canvasGroup=animatedObject.gameObject.GetComponent<CanvasGroup>();
-                        canvasGroup.alpha=1f-lerpValue;
+                        canvasGroup.alpha=Mathf.Lerp(animatedObject.startAlpha, animatedObject.endAlpha, lerpValue);
                     }
                     else {
                         float lerpValue = animatedObject.timeSpent/animatedObject.totalTime;
-                        animatedObject.gameObject.transform.position=Vector3.Lerp(animatedObject.initialPosition, animatedObject.targetPosition, lerpValue);
+                        animatedObject.gameObject.transform.localPosition=Vector3.Lerp(animatedObject.initialPosition, animatedObject.targetPosition, lerpValue);
                         animatedObject.gameObject.transform.localScale=Vector3.Lerp(animatedObject.startScale, animatedObject.endScale, lerpValue);
                     }
                 }
             }
             foreach (AnimatedObject objectToRemove in objectsToRemove) {
-               // animatedObjects.Remove(objectToRemove);
+               animatedObjects.Remove(objectToRemove);
                //TODO Super hacky - we're currently not removing the object from the list or destroying it
             }
         }
     }
 
     public void animateObject(GameObject gameObject, GameObject newParentObject, Vector3 targetPosition, Vector3 endScale, float totalTime) {
-        Debug.Log("Animating object "+gameObject.name+" to "+newParentObject.name+" in "+totalTime+" seconds");
+        //Debug.Log("Animating object "+gameObject.name+" to "+newParentObject.name+" in "+totalTime+" seconds");
         AnimatedObject newAnimatedObject = new AnimatedObject();
         newAnimatedObject.gameObject=gameObject;
         newAnimatedObject.targetParent=newParentObject;
-        newAnimatedObject.initialPosition=gameObject.transform.position;
         newAnimatedObject.targetPosition=targetPosition;
         newAnimatedObject.totalTime=totalTime;
         newAnimatedObject.timeSpent=0f;
         newAnimatedObject.startScale=gameObject.transform.localScale;
         newAnimatedObject.endScale=endScale;
         gameObject.transform.SetParent(animationContainer.transform, true);
+        newAnimatedObject.initialPosition=gameObject.transform.localPosition;
+        newAnimatedObject.startAlpha=1f;
+        newAnimatedObject.endAlpha=1f;
         animatedObjects.Add(newAnimatedObject);
     }
 
@@ -102,23 +123,37 @@ public class AnimationManager : MonoBehaviour {
     }
 
 
-    public void animateObjectExpandAndFade(GameObject gameObject, float totalTime, float expandToScale) {
+    public void animateObjectExpandAndFade(GameObject gameObject, float totalTime, float expandToScale, float startAlpha=1f, float endAlpha=0f, bool destroyOnFinish=true, bool cloneObject=true) {
 
-        Debug.Log("Animating object expand and fade "+gameObject.name+" to scale "+expandToScale+" in "+totalTime+" seconds");
         AnimatedObject newAnimatedObject = new AnimatedObject();
-        GameObject clonedGameObject=UnityEngine.Object.Instantiate(gameObject);
-        clonedGameObject.transform.SetParent(gameObject.transform.parent);
-        clonedGameObject.transform.position=gameObject.transform.position;
-        clonedGameObject.transform.localScale=gameObject.transform.localScale;
+
+
+        GameObject clonedGameObject;
         
+        if (cloneObject) {
+            clonedGameObject=UnityEngine.Object.Instantiate(gameObject);
+            clonedGameObject.transform.SetParent(gameObject.transform.parent);
+            clonedGameObject.transform.position=gameObject.transform.position;
+            clonedGameObject.transform.localScale=gameObject.transform.localScale;
+        }
+        else {
+            clonedGameObject=gameObject;
+        }
+        
+        newAnimatedObject.startAlpha=startAlpha;
+        newAnimatedObject.endAlpha=endAlpha;
         newAnimatedObject.gameObject=clonedGameObject;
         newAnimatedObject.totalTime=totalTime;
         newAnimatedObject.timeSpent=0f;
         newAnimatedObject.expandAndFade=true;
         newAnimatedObject.startScale=gameObject.transform.localScale;
         newAnimatedObject.endScale=gameObject.transform.localScale*expandToScale;
+        newAnimatedObject.destroyOnFinish=destroyOnFinish;
+        newAnimatedObject.targetParent=clonedGameObject.transform.parent.gameObject;
         clonedGameObject.transform.SetParent(animationContainer.transform, true);
         animatedObjects.Add(newAnimatedObject);
+
+        Debug.Log("Animating object expand and fade "+gameObject.name+" to scale "+newAnimatedObject.endScale+" ("+expandToScale+") in "+totalTime+" seconds");
     }
 
     public bool isAnimating() {
@@ -138,4 +173,7 @@ public class AnimatedObject : MonoBehaviour {
     public float totalTime;
     public float timeSpent;
     public bool expandAndFade=false;
+    public float startAlpha;
+    public float endAlpha;
+    public bool destroyOnFinish=false;
 }
