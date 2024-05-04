@@ -49,7 +49,9 @@ public class Enemy {
 
     public void Destroy() {
         //UnityEngine.Object.Destroy(currentHPUI);
-        UnityEngine.Object.Destroy(enemySO);
+//        UnityEngine.Object.Destroy(enemySO);
+
+        Debug.Log("iiii destroying enemy "+enemyUI.name);
         UnityEngine.Object.Destroy(enemyUI);
     }
 
@@ -72,10 +74,12 @@ public class Enemy {
     }
 
     public void animateHP() {
-        gameManager.animationManager.animateObjectExpandAndFade(hpContainer, .5f, 5f);
+        //gameManager.animationManager.animateObjectExpandAndFade(hpContainer, .5f, 5f);
+        gameManager.animationManager.animateObject(AnimationType.expandAndFade, hpContainer, null, null, 5f, .5f);
     }
 
     public void animateTimer() {
-        gameManager.animationManager.animateObjectExpandAndFade(timerContainer, .5f, 5f);
+        //gameManager.animationManager.animateObjectExpandAndFade(timerContainer, .5f, 5f);
+        gameManager.animationManager.animateObject(AnimationType.expandAndFade, timerContainer, null, null, 5f, .5f);
     }
 }

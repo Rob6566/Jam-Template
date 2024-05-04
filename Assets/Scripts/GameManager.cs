@@ -13,6 +13,11 @@ public enum GameState {paused, picking_card, scoring, between_games, tutorial, b
 public enum ScoringAnimation {about_to_start, fade_in,hand_fade_in, hand_type_fade_in, labels_fade_in, card_numbers_fade_in, card_1_score, card_2_score, card_3_score, card_4_score, card_5_score, hand_points_fade_in, hand_mult_fade_in, total_points_fade_in, total_x_fade_in, total_mult_fade_in, total_fade_in, fade_out, animate_score};
 
 public class GameManager : MonoBehaviour {
+
+    //TEST SETTINGS
+    bool testBoss=true;
+
+
     //Managers
     public AudioManager audioManager;
     public HighScoreManager highScoreManager;
@@ -135,6 +140,7 @@ public class GameManager : MonoBehaviour {
     public TextMeshProUGUI shopVouchersTXT;
     public TextMeshProUGUI shopSpeechTXT;
     public GameObject shopPurchaseButton;
+    public GameObject shopSkipButton;
     List<Card> cardsInShop = new List<Card>();
     List<CardBuffSO> buffsInShop = new List<CardBuffSO>();
 
@@ -248,6 +254,7 @@ public class GameManager : MonoBehaviour {
         bossScale=bossObject.transform.localScale;
         bossPosition=bossObject.transform.localPosition;
         bossContainer=bossObject.transform.parent;
+        Debug.Log("iiii Setup Boss parent="+bossContainer.gameObject.name+" scale="+bossScale);
 
         bossHighligherParent=bossHighlighter.transform.parent;
         bossHighlighterPosition=bossHighlighter.transform.localPosition;
@@ -279,6 +286,7 @@ public class GameManager : MonoBehaviour {
 
         //Load high scores
         StartCoroutine(highScoreManager.LoadScores(splashScoreHolder, Color.black));
+        audioManager.changeMusicMood(MusicMood.intro);
     }
 
     //Handle game loop
@@ -297,7 +305,7 @@ public class GameManager : MonoBehaviour {
         }
 
         animatePendingAttackTimer+=Time.deltaTime;
-        if (animatePendingAttackTimer>1.5f) {
+        if (animatePendingAttackTimer>1.5f && !showingOverlay()) {
             animatePendingAlternator=!animatePendingAlternator;
             foreach (Enemy enemy in enemies) {
                 if (enemy.turnsUntilAttack<3) { //Animate faster if attack is imminent
@@ -488,15 +496,16 @@ public class GameManager : MonoBehaviour {
 
                 foreach (Enemy enemyToRemove in enemiesToRemove) {
                     enemies.Remove(enemyToRemove);
+                    scoreHolders[(int)tempScoreHandType].monstersKilledWithHandType++;
                     if (gameState==GameState.boss) {
                         scoringAnimation++;
-                        
                         winGame();
                         return;
                     }
-                    animationManager.animateObjectExpandAndFade(enemyToRemove.EnemyUI, 1f, 5f);
+                    //animationManager.animateObjectExpandAndFade(enemyToRemove.EnemyUI, 1f, 5f);
+                    animationManager.animateObject(AnimationType.expandAndFade, enemyToRemove.EnemyUI, null, null, 5f, 1f, 1f, 0f);
+                    //AnimationType animationType, GameObject gameObject, GameObject newParentObject?, Vector3? targetPosition, Vector3 endScale, float totalTime, float startAlpha=1f, float endAlpha=1f, bool destroyOnFinish=true, bool cloneObject=true
                     enemyToRemove.Destroy();
-                    scoreHolders[(int)tempScoreHandType].monstersKilledWithHandType++;
                 }
 
                 bossObject.transform.SetParent(bossAttackContainer.transform);
@@ -506,6 +515,7 @@ public class GameManager : MonoBehaviour {
                 updateUI();
                 playGameMusic(true);
                 cardManager.dealNextUpCards();
+                Debug.Log("Show Shop 1");
                 showShopIfAvailable();
                 animatingScoring=false;
             break;
@@ -574,14 +584,20 @@ public class GameManager : MonoBehaviour {
         bossHighlighter.transform.localScale=new Vector3(5f, 5f, 5f);
 
         SHOP_INCREMENT_INCREASE=10;
-        BOSS_SPAWN_TURN=5;
-        BOSS_START_HP=100;
+        BOSS_SPAWN_TURN=50;
+        BOSS_START_HP=5000;
         BOSS_START_TIMER=25;
 
         animatePendingAttackTimer=0f;
 
-        audioManager.changeMusicMood(MusicMood.start_game);
+        if (testBoss) {
+            BOSS_SPAWN_TURN=5;
+            BOSS_START_HP=99;
+        }
+
         setCanvasStatus("GameCanvas", true);
+        audioManager.changeMusicMood(MusicMood.start_game);
+        tutorialManager.resetTutorialStep();
         if (skipTutorialToggle.isOn) {
             Debug.Log("STARTGAME No tutorial");
             audioManager.changeMusicMoodAfterCurrentLoop(MusicMood.game);
@@ -617,6 +633,7 @@ public class GameManager : MonoBehaviour {
     public void endTutorial(bool beforeGotFreeUpgrade) {
         if (beforeGotFreeUpgrade) {
             shopUsesAvailable++;
+            Debug.Log("Show Shop 2");
             showShopIfAvailable();
         }
         gameState=GameState.picking_card;
@@ -708,12 +725,12 @@ public class GameManager : MonoBehaviour {
     }
 
     public void updateUI() {
-        scoreText.text="Score: "+score.ToString();
-        hpText.text=hp.ToString();
+        scoreText.text="Score<br><b>"+score.ToString()+"</b>";
+        hpText.text="HP<br><b>"+hp.ToString()+"</b>";
 
         shopButton.SetActive(shopUsesAvailable>0);
         shopVouchersTXT.text="Shop vouchers: "+(shopUsesAvailable+1).ToString();
-        turnText.text="Turn<br>"+turnUpto.ToString()+"/"+BOSS_SPAWN_TURN.ToString();
+        turnText.text="Turn<br><b>"+turnUpto.ToString()+"/"+BOSS_SPAWN_TURN.ToString()+"</b>";
     }
 
     //Tick down the counters on enemies. We don't tick down the one in the hand played
@@ -805,6 +822,7 @@ public class GameManager : MonoBehaviour {
                 speechbubble.SetActive(true);
                 speechText.text=nemesisSpeeches[UnityEngine.Random.Range(0, nemesisSpeeches.Count)];
             }
+            Debug.Log("Show Shop 3");
             showShopIfAvailable();
         }
 
@@ -817,7 +835,8 @@ public class GameManager : MonoBehaviour {
     }
 
     void startBossAnimation() {
-        animationManager.animateObject(bossObject, bossAttackContainer, new Vector3(610.5352f+96f-140f/*755f*//*-101f*/, 487.7401f/*900f*//*-855.414f*/, 0f), new Vector3(2.5f, 2.5f, 2.5f), 2f);
+        //AnimationType animationType, GameObject gameObject, GameObject? newParentObject, Vector3? targetPosition, float endScale, float totalTime, float startAlpha=1f, float endAlpha=1f, bool destroyOnFinish=true, bool cloneObject=true
+        animationManager.animateObject(AnimationType.move, bossObject, bossAttackContainer, new Vector3(610.5352f+96f-140f/*755f*//*-101f*/, 487.7401f/*900f*//*-855.414f*/, 0f), 2.5f, 2f, 1f, 1f, false, false);
         animationManager.animateObjectExpandAndFade(bossHighlighter, 2f, 10f, 1f, 1f, false, false);
         bossFinalSpeech.SetActive(false);
     }
@@ -829,7 +848,7 @@ public class GameManager : MonoBehaviour {
     }
 
     public void showShopIfAvailable() {
-        if (shopUsesAvailable>0 && gameState!=GameState.boss) {
+        if (shopUsesAvailable>0 && gameState!=GameState.boss && shopOverlay.activeSelf==false) {
             clickShop();
         }
     }
@@ -917,7 +936,6 @@ public class GameManager : MonoBehaviour {
         endGameTXTMostPlayedHand.GetComponent<TextMeshProUGUI>().text=cardManager.getHandTypeName(mostPlayedHand);
 
         bossObject.transform.SetParent(bossContainer.transform);
-        bossObject.transform.localScale=bossScale;
         bossObject.transform.localPosition=bossPosition;
 
         bossHighlighter.transform.SetParent(bossHighligherParent);
@@ -942,6 +960,7 @@ public class GameManager : MonoBehaviour {
         hideAllContainerImages(); 
         destroyAllEnemies();  
         startGame();
+        //audioManager.changeMusicMood(MusicMood.intro);
     }
 
     public void destroyAllEnemies() {
@@ -979,7 +998,9 @@ public class GameManager : MonoBehaviour {
             shopBuffContainer.transform.GetChild(1).GetComponent<TextMeshProUGUI>().text=cardBuff.buffName;
         }
 
-        audioManager.changeMusicMood(MusicMood.shop);
+        if (!runningTutorial) {
+            audioManager.changeMusicMood(MusicMood.shop);
+        }
 
         updateUI();
         
@@ -999,10 +1020,12 @@ public class GameManager : MonoBehaviour {
         shopOverlay.SetActive(false);
         foreach(Card card in cardsInShop) {
             cardManager.discardCard(card);
+            card.CardUI.GetComponent<CanvasGroup>().alpha=1f;
         }
         cardsInShop.Clear();
         buffsInShop.Clear();
         playGameMusic(true);
+        Debug.Log("Show Shop 4");
         showShopIfAvailable();
     }
 
@@ -1014,8 +1037,8 @@ public class GameManager : MonoBehaviour {
         Card card = cardsInShop[shopCardSelected];
         CardBuffSO buff = buffsInShop[shopBuffSelected];    
 
+        List<Card> cardsToAnimate=new List<Card>{card};
 
-    //public enum CardEnhancement {increase_score, increase_mult, all_suits, remove_card, increase_rank, decrease_rank, copy_card};
         //Apply our buff to our card
         switch (buff.cardEnhancement) {
             case CardEnhancement.increase_score:
@@ -1025,9 +1048,7 @@ public class GameManager : MonoBehaviour {
                 card.addBuff(buff);
             break;
             case CardEnhancement.remove_card:
-                cardsInShop.Remove(card);
-                cardManager.removeCard(card);
-                card.Destroy();
+                
             break;
             case CardEnhancement.increase_rank:
                 card.modifyRank(1);
@@ -1039,12 +1060,70 @@ public class GameManager : MonoBehaviour {
                 Card newCard=card.cloneCard(cardManager.cardPrefab);
                 //cardsInShop.Add(newCard);
                 cardManager.registerCard(newCard);
-                cardManager.discardCard(newCard);
+                newCard.CardUI.transform.SetParent(card.CardUI.transform.parent);
+                newCard.CardUI.transform.localPosition = card.CardUI.transform.parent.localPosition+new Vector3(150f, 0, 0);
                 newCard.shrinkToRatio(cardManager.TINY_CARD_SIZE);
+                newCard.setZone(CardZone.shop);
+                cardsInShop.Add(newCard);
+                cardsToAnimate.Add(newCard);
             break;
         }
 
+        card.updateUI();
+
+        float riseAndFadeAnimationTime=1f;
+        float hideOtherCardAnimationTime=0.5f;
+        float animationPauseAtEnd=.1f;
+        float animationPercRising=0.7f;
+
+        //Animate chosen card(s) - rise, then animate to deck
+        foreach(Card cardToAnimate in cardsToAnimate) {
+            float endAlpha=((buff.cardEnhancement==CardEnhancement.remove_card) ? 0f : 1f);
+            AnimationType animationType=(buff.cardEnhancement==CardEnhancement.remove_card) ? AnimationType.expandAndFade : AnimationType.riseThenMove;
+            animationManager.animateObject(animationType, cardToAnimate.CardUI, null, new Vector3(-800f,-425f,0), 1f, riseAndFadeAnimationTime, 1f, endAlpha, false, false, animationPercRising);
+        }
+
+        //Switch card animation to face down after it's finished rising
+        Invoke("clickShopPurchase_setToDiscard", riseAndFadeAnimationTime*animationSpeed);
+
+        //Fade out non-purchased cards
+        /*foreach(Card thisCard in cardsInShop) {
+            if (!cardsToAnimate.Contains(thisCard)) {
+                animationManager.animateObject(AnimationType.expandAndFade, thisCard.CardUI, null, null, 1f, hideOtherCardAnimationTime, 1f, 0f, false, false);
+            }
+        }*/
+
+        shopPurchaseButton.SetActive(false);
+        shopSkipButton.SetActive(false);
+        
+        audioManager.playSound(GameSound.upgrade_card, 1f, 0);
+
+        Invoke("clickShopPurchase_complete", (riseAndFadeAnimationTime+animationPauseAtEnd)*animationSpeed);
+    }
+
+    public void clickShopPurchase_setToDiscard() {
+        foreach(Card thisCard in cardsInShop) {
+            thisCard.setZone(CardZone.discard);
+        }
+    }
+
+    public void clickShopPurchase_complete() {
+        Card card = cardsInShop[shopCardSelected];
+        CardBuffSO buff = buffsInShop[shopBuffSelected];   
+        switch (buff.cardEnhancement) { 
+            case CardEnhancement.remove_card:
+                cardsInShop.Remove(card);
+                cardManager.removeCard(card);
+                card.Destroy();
+            break;
+            /*case CardEnhancement.copy_card:
+                cardManager.discardCard(newCard);
+                newCard.shrinkToRatio(cardManager.TINY_CARD_SIZE);
+            break;*/
+        }
         clickSkipShop();
+        shopPurchaseButton.SetActive(true);
+        shopSkipButton.SetActive(true);
         tutorialManager.clickedApplyUpgrade();
     }
 
@@ -1099,7 +1178,9 @@ public class GameManager : MonoBehaviour {
                 if (thisEnemy.enemyPosition==(enemy-1)) {
                     thisEnemy.turnsUntilAttack+=timerIncrease;
                     thisEnemy.updateUI();
-                    thisEnemy.animateTimer();
+                    if (!showingOverlay()) {
+                        thisEnemy.animateTimer();
+                    }
                     break;
                 }
             }
@@ -1145,7 +1226,8 @@ public class GameManager : MonoBehaviour {
     }
 
     void loadHighScoresAtEndOfGame() {
-        Debug.Log("Load Scores at end of game");
+        Debug.Log("iiii reset boss parent="+bossContainer.gameObject.name+" scale="+bossScale);
+        bossObject.transform.localScale=bossScale;
         StartCoroutine(highScoreManager.LoadScores(endGameScoreHolder, Color.white));
     }
 
@@ -1179,7 +1261,12 @@ public class GameManager : MonoBehaviour {
 
     public void addStoreCreditForTutorial() {
         shopUsesAvailable=1;
+        Debug.Log("Show Shop 5");
         showShopIfAvailable();
+    }
+
+    public bool showingOverlay() {
+        return deckOverlay.activeSelf || shopOverlay.activeSelf || scoreOverlay.activeSelf;
     }
 }
 

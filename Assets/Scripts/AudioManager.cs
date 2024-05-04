@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public enum MusicMood {none, intro, tutorial, game, shop, scoring, dead, intense, very_intense, boss_intro, boss_loop, victory, start_game};
-public enum GameSound {deal, shuffle, flick, score};
+public enum GameSound {deal, shuffle, flick, score, upgrade_card};
 public class AudioManager : MonoBehaviour {
     [SerializeField] AudioSource sfxAudioSource;
     int playingMusic=-1;

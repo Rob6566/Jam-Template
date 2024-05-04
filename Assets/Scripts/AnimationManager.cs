@@ -7,6 +7,8 @@ using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
 
+
+public enum AnimationType {move, expandAndFade, riseThenMove};
 public class AnimationManager : MonoBehaviour {
 
     [SerializeField]
@@ -22,7 +24,7 @@ public class AnimationManager : MonoBehaviour {
     public void deleteAllAnimations() {
         foreach (AnimatedObject animatedObject in animatedObjects) {
             if (animatedObject.gameObject!=null) {
-                UnityEngine.Object.Destroy(animatedObject.gameObject);
+                //UnityEngine.Object.Destroy(animatedObject.gameObject);
             }
         }
         animatedObjects.Clear();
@@ -39,68 +41,150 @@ public class AnimationManager : MonoBehaviour {
         if (animatedObjects.Count>0) {
             List<AnimatedObject> objectsToRemove = new List<AnimatedObject>();
             foreach (AnimatedObject animatedObject in animatedObjects) {
-                if (animatedObject.gameObject==null) {
+                if (animatedObject.gameObject==null || animatedObject.completed) {
+                    Debug.Log("tttt DELETED Animating object "+animatedObject.name);
                     continue;
                 }
 
                 animatedObject.timeSpent+=(Time.deltaTime*gameManager.AnimationSpeed);
                 CanvasGroup canvasGroup=animatedObject.gameObject.GetComponent<CanvasGroup>();
+
+                //if (animatedObject.gameObject.name=="Enemy(Clone)") {
+                    Debug.Log("tttt UPDATE Animating object "+animatedObject.name+" timeSpent="+animatedObject.timeSpent+" totalTime="+animatedObject.totalTime);
+                //}
+                
                 if (animatedObject.timeSpent>=animatedObject.totalTime) {
-                    if (animatedObject.expandAndFade) {
-                        canvasGroup.alpha=animatedObject.endAlpha;
-                        if (animatedObject.destroyOnFinish) {
-                            animatedObject.gameObject.SetActive(false);
-                            UnityEngine.Object.Destroy(animatedObject.gameObject);
-                        }
-                    }
-                    else {
-                        animatedObject.gameObject.transform.localPosition=animatedObject.targetPosition;
+                    //DONE - finalise and lock to final position
+
+                    Debug.Log("tttt FIN Animating object "+animatedObject.name);
+
+                    canvasGroup.alpha=animatedObject.endAlpha;
+                    if (animatedObject.changeScale) {
                         animatedObject.gameObject.transform.localScale=animatedObject.endScale;
+                    }
+                    if (animatedObject.destroyOnFinish) {
+                        animatedObject.gameObject.SetActive(false);
+                        UnityEngine.Object.Destroy(animatedObject.gameObject);
+                    }
+
+                    if (animatedObject.animationType!=AnimationType.expandAndFade) {
+                        //animatedObject.gameObject.transform.localPosition=animatedObject.targetPosition;
                         if (animatedObject.targetParent!=null) {
                             animatedObject.gameObject.transform.SetParent(animatedObject.targetParent.transform, true);
+                            animatedObject.targetParent=null;
                         }
                     }
-//                    Debug.Log("Finished animating "+animatedObject.gameObject.name+" to "+animatedObject.targetParent.name+" in "+animatedObject.timeSpent+" seconds");
+                    animatedObject.completed=true;
                     objectsToRemove.Add(animatedObject);
                 }
                 else {
-                    if (animatedObject.expandAndFade) {
-                        float lerpValue = animatedObject.timeSpent/animatedObject.totalTime;
-                        animatedObject.gameObject.transform.localScale=Vector3.Lerp(animatedObject.startScale, animatedObject.endScale, lerpValue);
+                    //Animation in progress
+
+                    float lerpValue = animatedObject.timeSpent/animatedObject.totalTime;
+                    if (animatedObject.changeScale) {
+                        animatedObject.gameObject.transform.localScale=Vector3.Lerp(animatedObject.startScale, animatedObject.endScale, lerpValue);                        
+                    }
+                    if (animatedObject.startAlpha!=animatedObject.endAlpha) {
                         canvasGroup.alpha=Mathf.Lerp(animatedObject.startAlpha, animatedObject.endAlpha, lerpValue);
                     }
-                    else {
-                        float lerpValue = animatedObject.timeSpent/animatedObject.totalTime;
-                        animatedObject.gameObject.transform.localPosition=Vector3.Lerp(animatedObject.initialPosition, animatedObject.targetPosition, lerpValue);
+
+                    if (animatedObject.animationType==AnimationType.expandAndFade) {
                         animatedObject.gameObject.transform.localScale=Vector3.Lerp(animatedObject.startScale, animatedObject.endScale, lerpValue);
+                    }
+                    else if (animatedObject.animationType==AnimationType.riseThenMove) {
+                        Debug.Log("uuuu riseThenMove lerpValue="+lerpValue);
+                        if (lerpValue<(animatedObject.timeInRisePhase*animatedObject.totalTime)) {
+                            animatedObject.gameObject.transform.localPosition=Vector3.Lerp(animatedObject.initialPosition, animatedObject.midPosition, lerpValue/animatedObject.timeInRisePhase);
+                            Debug.Log("uuuu Rising lerpValue="+lerpValue+" target= "+(animatedObject.timeInRisePhase*animatedObject.totalTime));
+                        }
+                        else {
+                            animatedObject.gameObject.transform.localPosition=Vector3.Lerp(animatedObject.midPosition, animatedObject.targetPosition, (lerpValue-animatedObject.timeInRisePhase)/(1f-animatedObject.timeInRisePhase));
+                            Debug.Log("uuuu Moving "+animatedObject.timeInRisePhase+" lerpValue="+lerpValue*animatedObject.totalTime);
+                        }
+                    }
+                    else {
+                        animatedObject.gameObject.transform.localPosition=Vector3.Lerp(animatedObject.initialPosition, animatedObject.targetPosition, lerpValue);
                     }
                 }
             }
             foreach (AnimatedObject objectToRemove in objectsToRemove) {
-               animatedObjects.Remove(objectToRemove);
+                if (objectToRemove.name=="Card(Clone)") {
+                    //Debug.Log("xxxx deleting object "+objectToRemove.name);
+                    animatedObjects.Remove(objectToRemove);
+                }
+               //animatedObjects.Remove(objectToRemove);
                //TODO Super hacky - we're currently not removing the object from the list or destroying it
             }
         }
     }
 
-    public void animateObject(GameObject gameObject, GameObject newParentObject, Vector3 targetPosition, Vector3 endScale, float totalTime) {
-        //Debug.Log("Animating object "+gameObject.name+" to "+newParentObject.name+" in "+totalTime+" seconds");
+
+    //GameObject gameObject, float totalTime, float expandToScale, float startAlpha=1f, float endAlpha=0f, bool destroyOnFinish=true, bool cloneObject=true
+
+    public void animateObject(AnimationType animationType, GameObject gameObject, GameObject? newParentObject, Vector3? targetPosition, float endScale, float totalTime, float startAlpha=1f, float endAlpha=1f, bool destroyOnFinish=true, bool cloneObject=true, float timeInRisePhase=.5f) {
+        Debug.Log("xxxx Animating object "+gameObject.name+" clone="+cloneObject+" destroyOnFinish="+destroyOnFinish);
         AnimatedObject newAnimatedObject = new AnimatedObject();
-        newAnimatedObject.gameObject=gameObject;
-        newAnimatedObject.targetParent=newParentObject;
-        newAnimatedObject.targetPosition=targetPosition;
+        newAnimatedObject.animationType=animationType;
+        
+        GameObject clonedGameObject;
+        if (cloneObject) {
+            clonedGameObject=UnityEngine.Object.Instantiate(gameObject);
+            clonedGameObject.transform.SetParent(gameObject.transform.parent);
+            clonedGameObject.transform.position=gameObject.transform.position;
+            clonedGameObject.transform.localScale=gameObject.transform.localScale;
+        }
+        else {
+            clonedGameObject=gameObject;
+        }
+        
+        newAnimatedObject.gameObject=clonedGameObject;
+
+        if (newParentObject==null) {
+            newAnimatedObject.targetParent=(GameObject)gameObject.transform.parent.gameObject;
+        }
+        else {
+            newAnimatedObject.targetParent=newParentObject;
+        }
+        
+        if (targetPosition==null) {
+            newAnimatedObject.targetPosition=gameObject.transform.localPosition;;
+        }
+        else {
+            newAnimatedObject.targetPosition=(Vector3)targetPosition;
+        }
+
+        if (endScale!=1f) {
+            newAnimatedObject.changeScale=true;
+        }
+
+        newAnimatedObject.name=gameObject.name;
         newAnimatedObject.totalTime=totalTime;
         newAnimatedObject.timeSpent=0f;
         newAnimatedObject.startScale=gameObject.transform.localScale;
-        newAnimatedObject.endScale=endScale;
-        gameObject.transform.SetParent(animationContainer.transform, true);
+        newAnimatedObject.endScale=new Vector3(endScale, endScale, endScale);
+        clonedGameObject.transform.SetParent(animationContainer.transform, true);
         newAnimatedObject.initialPosition=gameObject.transform.localPosition;
-        newAnimatedObject.startAlpha=1f;
-        newAnimatedObject.endAlpha=1f;
+        newAnimatedObject.timeInRisePhase=timeInRisePhase;
+
+        if(animationType==AnimationType.riseThenMove) {
+            newAnimatedObject.midPosition=newAnimatedObject.initialPosition+new Vector3(0f, 200f, 0f);
+
+            Debug.Log("Rise then move "+gameObject.name+" from "+newAnimatedObject.initialPosition+" to "+newAnimatedObject.midPosition+" then to "+targetPosition);
+        }
+        
+        //bool cloneObject=true
+        newAnimatedObject.startAlpha=startAlpha;
+        newAnimatedObject.endAlpha=endAlpha;
+        newAnimatedObject.destroyOnFinish=destroyOnFinish;
+    
+        
+        
         animatedObjects.Add(newAnimatedObject);
+
+        Debug.Log("yyyy Animating object "+clonedGameObject.name+" object="+newAnimatedObject);
     }
 
-    public void animateObjectToNewParent(GameObject gameObject, GameObject newParent, float totalTime, float localScaleMultiplier=1f) {
+    /*public void animateObjectToNewParent(GameObject gameObject, GameObject newParent, float totalTime, float localScaleMultiplier=1f) {
         gameObject.transform.SetParent(newParent.transform, true);
 
         float initialWidth=gameObject.GetComponent<RectTransform>().rect.width;
@@ -119,8 +203,8 @@ public class AnimationManager : MonoBehaviour {
 //        newPosition.y-=(newHeight/4f);
 
 
-        animateObject(gameObject, newParent, newPosition/*new Vector3(0f, 0f, 0f)*/, newLocalScale, totalTime);
-    }
+        animateObject(gameObject, newParent, newPosition, newLocalScale, totalTime);
+    }*/
 
 
     public void animateObjectExpandAndFade(GameObject gameObject, float totalTime, float expandToScale, float startAlpha=1f, float endAlpha=0f, bool destroyOnFinish=true, bool cloneObject=true) {
@@ -145,9 +229,13 @@ public class AnimationManager : MonoBehaviour {
         newAnimatedObject.gameObject=clonedGameObject;
         newAnimatedObject.totalTime=totalTime;
         newAnimatedObject.timeSpent=0f;
-        newAnimatedObject.expandAndFade=true;
+        newAnimatedObject.animationType=AnimationType.expandAndFade;
         newAnimatedObject.startScale=gameObject.transform.localScale;
         newAnimatedObject.endScale=gameObject.transform.localScale*expandToScale;
+        if (expandToScale!=1f) {
+            newAnimatedObject.changeScale=true;
+        }
+
         newAnimatedObject.destroyOnFinish=destroyOnFinish;
         newAnimatedObject.targetParent=clonedGameObject.transform.parent.gameObject;
         clonedGameObject.transform.SetParent(animationContainer.transform, true);
@@ -164,16 +252,21 @@ public class AnimationManager : MonoBehaviour {
 
 
 public class AnimatedObject : MonoBehaviour {
+    public AnimationType animationType;
     public GameObject gameObject;
     public GameObject targetParent;
     public Vector3 initialPosition;
     public Vector3 targetPosition;
+    public Vector3 midPosition;
     public Vector3 startScale;
     public Vector3 endScale;
     public float totalTime;
     public float timeSpent;
-    public bool expandAndFade=false;
     public float startAlpha;
     public float endAlpha;
     public bool destroyOnFinish=false;
+    public bool changeScale=false;
+    public float timeInRisePhase; //Time in % to spend in the rise phase
+    public string name;
+    public bool completed=false;
 }

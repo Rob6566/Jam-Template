@@ -23,7 +23,7 @@ public class TutorialManager : MonoBehaviour {
     }
 
     public void startTutorial() {
-        tutorialStep=TutorialStep.intro1;
+        resetTutorialStep();
         toggleObjectsForTutorial(false);
         loadTutorialStep();
     }
@@ -105,5 +105,9 @@ public class TutorialManager : MonoBehaviour {
             tutorialUI.SetActive(i==(int)tutorialStep);
             i++;
         }
+    }
+
+    public void resetTutorialStep() {
+        tutorialStep=TutorialStep.intro1;
     }
 }
