@@ -14,16 +14,13 @@ public enum ScoringAnimation {about_to_start, fade_in,hand_fade_in, hand_type_fa
 
 public class GameManager : MonoBehaviour {
 
-    //TEST SETTINGS
-    bool testBoss=true;
-
-
     //Managers
     public AudioManager audioManager;
     public HighScoreManager highScoreManager;
     public CardManager cardManager;
     public AnimationManager animationManager;
     public TutorialManager tutorialManager;
+    public GameLengthManager gameLengthManager;
     
     public List<GameObject> canvasses = new List<GameObject>();
 
@@ -39,9 +36,6 @@ public class GameManager : MonoBehaviour {
 
     //Text Mesh Pro checkbox for skipping tutorial
     public Toggle skipTutorialToggle;
-
-    [SerializeField]
-    List<EnemySO> enemySOs;
 
 
     //Boss stuff
@@ -170,7 +164,6 @@ public class GameManager : MonoBehaviour {
     private int shopUsesAvailable=0;
     private int hp=200;
     private int turnUpto=0;
-    private int SHOP_INCREMENT_INCREASE=20;
     private const int START_HP=200;
     private const int MAX_TURNS=100;
     public TextMeshProUGUI scoreText;
@@ -178,12 +171,6 @@ public class GameManager : MonoBehaviour {
     public TextMeshProUGUI turnText;
     private int shopCardSelected=-1;
     private int shopBuffSelected=-1;
-
-
-    //Quick game speed
-    private int BOSS_START_HP=5000;
-    private int BOSS_START_TIMER=25;
-    private int BOSS_SPAWN_TURN=50;
 
     private bool runningTutorial;
     private bool animatingScoring=false;
@@ -268,6 +255,8 @@ public class GameManager : MonoBehaviour {
         highScoreManager.init();
         tutorialManager=GameObject.FindWithTag("TutorialManager").GetComponent<TutorialManager>();   
         tutorialManager.init(this);
+        gameLengthManager=GameObject.FindWithTag("GameLengthManager").GetComponent<GameLengthManager>();   
+        gameLengthManager.init();
         
         
         cardManager=GameObject.FindWithTag("CardManager").GetComponent<CardManager>();   
@@ -333,6 +322,7 @@ public class GameManager : MonoBehaviour {
                 if (gameState!=GameState.boss) {
                     audioManager.changeMusicMood(MusicMood.scoring);
                 }
+                //animationManager.deleteAllAnimations();
                 
             break;
 
@@ -571,6 +561,14 @@ public class GameManager : MonoBehaviour {
         if (!highScoreManager.validateName()) {
             return;
         }
+        audioManager.changeMusicMood(MusicMood.start_game);
+        setCanvasStatus("GameSpeedCanvas", true);
+    }
+
+
+    public void startGameWithSpeed(int gameSpeed) {
+
+        gameLengthManager.setGameLength(gameSpeed);
 
         hp=START_HP;
         turnUpto=0;
@@ -583,20 +581,10 @@ public class GameManager : MonoBehaviour {
         bossHighlighter.SetActive(false);
         bossHighlighter.transform.localScale=new Vector3(5f, 5f, 5f);
 
-        SHOP_INCREMENT_INCREASE=10;
-        BOSS_SPAWN_TURN=50;
-        BOSS_START_HP=5000;
-        BOSS_START_TIMER=25;
-
         animatePendingAttackTimer=0f;
 
-        if (testBoss) {
-            BOSS_SPAWN_TURN=5;
-            BOSS_START_HP=99;
-        }
-
         setCanvasStatus("GameCanvas", true);
-        audioManager.changeMusicMood(MusicMood.start_game);
+        Debug.Log("uuuu game canvas");
         tutorialManager.resetTutorialStep();
         if (skipTutorialToggle.isOn) {
             Debug.Log("STARTGAME No tutorial");
@@ -613,13 +601,14 @@ public class GameManager : MonoBehaviour {
 
         cardManager.dealAllCards();
 
-        setCanvasStatus("ControlPanelCanvas", true, false);
+        //setCanvasStatus("ControlPanelCanvas", true, true);
 
         animationManager.deleteAllAnimations();
         
 
         updateUI();
     }
+
 
     public void setActiveCanvas(string canvasTag) {
         Debug.Log("Set Active Canvas "+canvasTag);
@@ -730,7 +719,7 @@ public class GameManager : MonoBehaviour {
 
         shopButton.SetActive(shopUsesAvailable>0);
         shopVouchersTXT.text="Shop vouchers: "+(shopUsesAvailable+1).ToString();
-        turnText.text="Turn<br><b>"+turnUpto.ToString()+"/"+BOSS_SPAWN_TURN.ToString()+"</b>";
+        turnText.text="Turn<br><b>"+turnUpto.ToString()+"/"+gameLengthManager.GameLengthSO.BOSS_SPAWN_TURN.ToString()+"</b>";
     }
 
     //Tick down the counters on enemies. We don't tick down the one in the hand played
@@ -741,7 +730,7 @@ public class GameManager : MonoBehaviour {
 
         turnUpto++;
         bool spawningBoss=false;
-        if (turnUpto>=BOSS_SPAWN_TURN && gameState!=GameState.boss) {
+        if (turnUpto>=gameLengthManager.GameLengthSO.BOSS_SPAWN_TURN && gameState!=GameState.boss) {
             gameState=GameState.boss;
             audioManager.changeMusicMood(MusicMood.boss_intro);
             Invoke("startBossMusicLoop", 3f);
@@ -753,8 +742,8 @@ public class GameManager : MonoBehaviour {
 
             Enemy boss = new Enemy();
             boss.init(this, bossSO, bossObject, 1);
-            boss.HP=BOSS_START_HP;
-            boss.turnsUntilAttack=BOSS_START_TIMER;
+            boss.HP=gameLengthManager.GameLengthSO.BOSS_START_HP;
+            boss.turnsUntilAttack=gameLengthManager.GameLengthSO.BOSS_START_TIMER;
             boss.updateUI();
 
             foreach (Enemy enemy in enemies) {
@@ -769,7 +758,7 @@ public class GameManager : MonoBehaviour {
         List<Enemy> enemiesToRemove = new List<Enemy>();
         Debug.Log("Tick down enemies, excluding "+enemyToExclude);
         foreach (Enemy enemy in enemies) {
-            if (enemy.enemyPosition!=enemyToExclude && enemy.HP>0) {
+            if (gameState==GameState.boss || (enemy.enemyPosition!=enemyToExclude && enemy.HP>0)) {
                 enemy.turnsUntilAttack--;
                 enemy.animateTimer();
             }
@@ -877,7 +866,7 @@ public class GameManager : MonoBehaviour {
                 enemyObject.transform.localPosition=Vector3.zero;
                 enemyObject.transform.localScale=new Vector3(1.4f, 1.4f, 1.4f);
                 
-                EnemySO enemySO = getRandomEnemy();
+                EnemySO enemySO = gameLengthManager.getRandomEnemy(turnUpto);
                 
                 Enemy enemy = new Enemy();
                 enemy.init(this, enemySO, enemyObject, i);
@@ -886,14 +875,6 @@ public class GameManager : MonoBehaviour {
             }
         }
 
-    }
-
-    private EnemySO getRandomEnemy() {
-        EnemySO enemy = enemySOs[UnityEngine.Random.Range(0, enemySOs.Count)];
-        if (enemy.spawnAfterRound>turnUpto || enemy.stopSpawningAfterRound<turnUpto) {
-            return getRandomEnemy(); //Yay infinite loop
-        }
-        return enemy;
     }
 
     public void winGame() {
@@ -1024,7 +1005,10 @@ public class GameManager : MonoBehaviour {
         }
         cardsInShop.Clear();
         buffsInShop.Clear();
-        playGameMusic(true);
+        if(shopUsesAvailable==0) {
+            playGameMusic(true);
+        }
+        
         Debug.Log("Show Shop 4");
         showShopIfAvailable();
     }
@@ -1096,7 +1080,7 @@ public class GameManager : MonoBehaviour {
         shopPurchaseButton.SetActive(false);
         shopSkipButton.SetActive(false);
         
-        audioManager.playSound(GameSound.upgrade_card, 1f, 0);
+        audioManager.playSound(buff.soundToPlay, 1f, 0);
 
         Invoke("clickShopPurchase_complete", (riseAndFadeAnimationTime+animationPauseAtEnd)*animationSpeed);
     }
@@ -1164,7 +1148,7 @@ public class GameManager : MonoBehaviour {
     private void checkShopVoucherThreshold(int depth=0) {
         if (score>=nextShopScore) {
             shopUsesAvailable++;
-            shopIncrement+=SHOP_INCREMENT_INCREASE;
+            shopIncrement+=gameLengthManager.GameLengthSO.SHOP_INCREMENT_INCREASE;
             nextShopScore+=shopIncrement;
             if (depth==0) {
                 animationManager.animateObjectExpandAndFade(shopButton, .3f, 2f);
@@ -1198,7 +1182,7 @@ public class GameManager : MonoBehaviour {
         }   
 
         if (shopOverlay.activeSelf) {
-            mood=MusicMood.shop;
+            return MusicMood.shop;
         }   
 
         foreach (Enemy enemy in enemies) {

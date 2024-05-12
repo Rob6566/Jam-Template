@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: 2-boss-intro
   m_EditorClassIdentifier: 
   tracks:
-  - {fileID: 8300000, guid: 3a27e3d941fb346ac9cfd00bae59bed7, type: 3}
+  - {fileID: 8300000, guid: b29f2fcebf11849d9886dfd392f73391, type: 3}
   musicMood: 9
-  loopsInTrack: 3
+  loopsInTrack: 6
   gameSound: 0

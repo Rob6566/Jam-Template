@@ -409,7 +409,7 @@ public class CardManager : MonoBehaviour {
              List<GameObject> handContainers=(hand==1 ? hand1Containers : (hand==2 ? hand2Containers : hand3Containers));
 
              int timerIncrease=cardDrafted.getTimerIncrease();
-             if (timerIncrease>0) {
+             if (timerIncrease>0 && gameManager.GameState!=GameState.boss) {
                  gameManager.increaseEnemyTimer(timerIncrease, hand);
              }
 
@@ -533,10 +533,10 @@ public class CardManager : MonoBehaviour {
             setContainerTrans(container, 1f);
         }
         foreach(GameObject container in nextUpHolderBackgrounds) {
-            setContainerTrans(container, 1f);
+            setContainerTrans(container, .95f);
         }
         foreach(GameObject container in handContainers) {
-            setContainerTrans(container, 1f);
+            setContainerTrans(container, .95f);
         }
         foreach(GameObject container in currentDraftContainers) {
             setContainerTrans(container, 1f);

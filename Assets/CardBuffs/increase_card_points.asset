@@ -18,3 +18,4 @@ MonoBehaviour:
   sprite: {fileID: 21300000, guid: 9cc2d2f766e6b4836ac928f866de6012, type: 3}
   cardEnhancement: 0
   fontWhite: 1
+  soundToPlay: 10

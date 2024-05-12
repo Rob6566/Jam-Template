@@ -27,6 +27,8 @@ TagManager:
   - Tutorial1
   - TutorialManager
   - GameSpeedCanvas
+  - GameLengthManager
+  - NoDelete
   layers:
   - Default
   - TransparentFX

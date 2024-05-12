@@ -107,7 +107,7 @@ public class HighScoreManager: MonoBehaviour {
 
                         GameObject gameObject = Instantiate(scorePrefab);
                         gameObject.transform.SetParent(scoreHolder.transform);      
-                        gameObject.transform.localPosition=new Vector3(-45, 28-(50*scoreUpto), 0);
+                        gameObject.transform.localPosition=new Vector3(-45, 18-(48*scoreUpto), 0);
                         gameObject.transform.localScale=new Vector3(1f, 1f, 1f);
                         TextMeshProUGUI txtName = gameObject.transform.GetChild(0).gameObject.GetComponent<TextMeshProUGUI>();
                             txtName.text=thisScore.name;

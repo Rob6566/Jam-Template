@@ -23,8 +23,8 @@ public class AnimationManager : MonoBehaviour {
 
     public void deleteAllAnimations() {
         foreach (AnimatedObject animatedObject in animatedObjects) {
-            if (animatedObject.gameObject!=null) {
-                //UnityEngine.Object.Destroy(animatedObject.gameObject);
+            if (animatedObject.gameObject!=null && animatedObject.animationType==AnimationType.expandAndFade && animatedObject.gameObject.tag!="NoDelete") {
+                UnityEngine.Object.Destroy(animatedObject.gameObject);
             }
         }
         animatedObjects.Clear();
@@ -42,7 +42,7 @@ public class AnimationManager : MonoBehaviour {
             List<AnimatedObject> objectsToRemove = new List<AnimatedObject>();
             foreach (AnimatedObject animatedObject in animatedObjects) {
                 if (animatedObject.gameObject==null || animatedObject.completed) {
-                    Debug.Log("tttt DELETED Animating object "+animatedObject.name);
+                    Debug.Log("tttt DELETED Animating object "+animatedObject.name+" Objects="+animatedObjects.Count);
                     continue;
                 }
 

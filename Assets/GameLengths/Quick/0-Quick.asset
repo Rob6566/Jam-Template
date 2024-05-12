@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f9d9518740c3488d94f85a8447cb05e, type: 3}
+  m_Name: 0-Quick
+  m_EditorClassIdentifier: 
+  gameLengthName: Quick
+  gameLength: 0
+  enemies:
+  - {fileID: 11400000, guid: bfccedff0fa8944dc89047786de77faa, type: 2}
+  - {fileID: 11400000, guid: d98631142528e42db9c1e7c1a6988521, type: 2}
+  - {fileID: 11400000, guid: 124f13d4af47d4f23b7746e24ba864cf, type: 2}
+  - {fileID: 11400000, guid: eefa1158d38f342c6ba3800fd859ea43, type: 2}
+  - {fileID: 11400000, guid: 8e7ff9d65f2d54ad98f7bb8b15c07fc6, type: 2}
+  - {fileID: 11400000, guid: 4bb647a9ef44f493bb26aadb78d9a469, type: 2}
+  - {fileID: 11400000, guid: adc51e40b73384b2292bd18abd38ad58, type: 2}
+  BOSS_START_HP: 50
+  BOSS_START_TIMER: 25
+  BOSS_SPAWN_TURN: 3
+  SHOP_INCREMENT_INCREASE: 18
+  SHOP_INITIAL_INCREMENT: 60

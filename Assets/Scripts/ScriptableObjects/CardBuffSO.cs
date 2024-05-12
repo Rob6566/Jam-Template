@@ -13,4 +13,5 @@ public class CardBuffSO : ScriptableObject {
     public Sprite sprite;
     public CardEnhancement cardEnhancement;
     public bool fontWhite;
+    public GameSound soundToPlay;
 }

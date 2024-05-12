@@ -17,3 +17,5 @@ MonoBehaviour:
   buffString: Copy Card
   sprite: {fileID: 21300000, guid: 3269dfc46fac54d2da19eb50ee3a1a34, type: 3}
   cardEnhancement: 6
+  fontWhite: 0
+  soundToPlay: 5
