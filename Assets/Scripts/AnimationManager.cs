@@ -30,7 +30,9 @@ public class AnimationManager : MonoBehaviour {
         animatedObjects.Clear();
 
         foreach(Transform child in animationContainer.transform) {
-            Destroy(child.gameObject);
+            if (child.gameObject.tag!="NoDelete") {
+                Destroy(child.gameObject);
+            }
         }   
     }
 
@@ -170,6 +172,10 @@ public class AnimationManager : MonoBehaviour {
             newAnimatedObject.midPosition=newAnimatedObject.initialPosition+new Vector3(0f, 200f, 0f);
 
             Debug.Log("Rise then move "+gameObject.name+" from "+newAnimatedObject.initialPosition+" to "+newAnimatedObject.midPosition+" then to "+targetPosition);
+        }
+
+        if (animationType==AnimationType.expandAndFade) {
+            newAnimatedObject.gameObject.tag="";
         }
         
         //bool cloneObject=true

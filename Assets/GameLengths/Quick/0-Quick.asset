@@ -22,8 +22,9 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 8e7ff9d65f2d54ad98f7bb8b15c07fc6, type: 2}
   - {fileID: 11400000, guid: 4bb647a9ef44f493bb26aadb78d9a469, type: 2}
   - {fileID: 11400000, guid: adc51e40b73384b2292bd18abd38ad58, type: 2}
-  BOSS_START_HP: 50
+  BOSS_START_HP: 5000
   BOSS_START_TIMER: 25
-  BOSS_SPAWN_TURN: 3
+  BOSS_SPAWN_TURN: 50
   SHOP_INCREMENT_INCREASE: 18
   SHOP_INITIAL_INCREMENT: 60
+  HIGH_SCORE_GAME_ID: ludum55-rob-postjam-0

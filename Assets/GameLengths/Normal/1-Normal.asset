@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6f9d9518740c3488d94f85a8447cb05e, type: 3}
   m_Name: 1-Normal
   m_EditorClassIdentifier: 
-  gameLengthName: 
+  gameLengthName: Normal
   gameLength: 1
   enemies:
   - {fileID: 11400000, guid: 5885761cc627e41eba7ff35537c2ebc3, type: 2}
@@ -27,3 +27,4 @@ MonoBehaviour:
   BOSS_SPAWN_TURN: 100
   SHOP_INCREMENT_INCREASE: 20
   SHOP_INITIAL_INCREMENT: 100
+  HIGH_SCORE_GAME_ID: ludum55-rob-postjam-1

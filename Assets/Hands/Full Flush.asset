@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 270bcc5a27809441090562f826ed6dc4, type: 3}
   m_Name: Full Flush
   m_EditorClassIdentifier: 
-  handName: Five of a Kind
+  handName: Flush House
   handType: 10
-  mult: 14
+  mult: 12
   score: 140

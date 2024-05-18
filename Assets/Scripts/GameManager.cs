@@ -37,6 +37,9 @@ public class GameManager : MonoBehaviour {
     //Text Mesh Pro checkbox for skipping tutorial
     public Toggle skipTutorialToggle;
 
+    //Panels with "Select Name" and "Game Speed" on splash
+    public List<GameObject> startGamePanels = new List<GameObject>();
+
 
     //Boss stuff
     public GameObject bossObject;
@@ -130,6 +133,7 @@ public class GameManager : MonoBehaviour {
     public GameObject shopButton;
     public GameObject shopOverlay;
     public List<GameObject> shopCardContainers = new List<GameObject>();
+    public List<GameObject> shopCardHighlighters = new List<GameObject>();
     public List<GameObject> shopBuffContainers = new List<GameObject>();
     public TextMeshProUGUI shopVouchersTXT;
     public TextMeshProUGUI shopSpeechTXT;
@@ -169,7 +173,7 @@ public class GameManager : MonoBehaviour {
     public TextMeshProUGUI scoreText;
     public TextMeshProUGUI hpText;
     public TextMeshProUGUI turnText;
-    private int shopCardSelected=-1;
+    private List<int> shopCardSelected=new List<int>();
     private int shopBuffSelected=-1;
 
     private bool runningTutorial;
@@ -256,7 +260,7 @@ public class GameManager : MonoBehaviour {
         tutorialManager=GameObject.FindWithTag("TutorialManager").GetComponent<TutorialManager>();   
         tutorialManager.init(this);
         gameLengthManager=GameObject.FindWithTag("GameLengthManager").GetComponent<GameLengthManager>();   
-        gameLengthManager.init();
+        gameLengthManager.init(this);
         
         
         cardManager=GameObject.FindWithTag("CardManager").GetComponent<CardManager>();   
@@ -268,13 +272,15 @@ public class GameManager : MonoBehaviour {
 
         setAnimationSpeed();
 
+        setStartGamePanel(0);
+
         //Play music
         audioManager.initAdaptiveMusic(); //fadeInMusic(0, 0, 1f);
 
         hideAllContainerImages();
 
         //Load high scores
-        StartCoroutine(highScoreManager.LoadScores(splashScoreHolder, Color.black));
+        gameLengthManager.loadHighScores();
         audioManager.changeMusicMood(MusicMood.intro);
     }
 
@@ -320,9 +326,9 @@ public class GameManager : MonoBehaviour {
                 nextScoringEvent=true;
                 setDraftButtonsActive(false);
                 if (gameState!=GameState.boss) {
-                    audioManager.changeMusicMood(MusicMood.scoring);
+                    audioManager.changeMusicMood(getGameMood(true));
                 }
-                //animationManager.deleteAllAnimations();
+                animationManager.deleteAllAnimations();
                 
             break;
 
@@ -398,7 +404,7 @@ public class GameManager : MonoBehaviour {
                     scoreCardMult.text=tempScoreCardMult.ToString();
                 }
 
-                if(tempScoreTimeSinceLastEvent>.5f) {
+                if(tempScoreTimeSinceLastEvent>.4f) {
                     nextScoringEvent=true;
                     tempScoreCardsInHand[cardNo].CardUI.transform.localScale=new Vector3(cardManager.SMALL_CARD_SIZE, cardManager.SMALL_CARD_SIZE, cardManager.SMALL_CARD_SIZE);
                     if (cardNo<4) {
@@ -562,11 +568,22 @@ public class GameManager : MonoBehaviour {
             return;
         }
         audioManager.changeMusicMood(MusicMood.start_game);
-        setCanvasStatus("GameSpeedCanvas", true);
+        //setCanvasStatus("GameSpeedCanvas", true);
+        setStartGamePanel(1);
+    }
+
+    void setStartGamePanel(int panelIndex) {
+        int i=0;
+        foreach(GameObject thisPanel in startGamePanels) {
+            thisPanel.SetActive(i==panelIndex);
+            i++;
+        }
     }
 
 
     public void startGameWithSpeed(int gameSpeed) {
+
+        audioManager.changeMusicMood(MusicMood.start_game);
 
         gameLengthManager.setGameLength(gameSpeed);
 
@@ -924,7 +941,7 @@ public class GameManager : MonoBehaviour {
         bossHighlighter.transform.localScale=bossHighlighterScale;
         
 
-        StartCoroutine(highScoreManager.SaveScore(score));
+        StartCoroutine(highScoreManager.SaveScore(score, gameLengthManager.GameLengthSO.HIGH_SCORE_GAME_ID));
         Invoke("loadHighScoresAtEndOfGame", 2f); //Load scores after score is saved
 
     }
@@ -940,7 +957,7 @@ public class GameManager : MonoBehaviour {
         cardManager.resetDeck();     
         hideAllContainerImages(); 
         destroyAllEnemies();  
-        startGame();
+        startGameWithSpeed((int)gameLengthManager.GameLength);
         //audioManager.changeMusicMood(MusicMood.intro);
     }
 
@@ -1018,10 +1035,16 @@ public class GameManager : MonoBehaviour {
     }
 
     public void clickShopPurchase() {
-        Card card = cardsInShop[shopCardSelected];
+       
+       
+        List<Card> cards = new List<Card>();
+        foreach(int cardID in shopCardSelected) {
+            cards.Add(cardsInShop[cardID]);
+        }
+       
         CardBuffSO buff = buffsInShop[shopBuffSelected];    
 
-        List<Card> cardsToAnimate=new List<Card>{card};
+        List<Card> cardsToAnimate=new List<Card>(cards);
 
         //Apply our buff to our card
         switch (buff.cardEnhancement) {
@@ -1029,32 +1052,53 @@ public class GameManager : MonoBehaviour {
             case CardEnhancement.increase_mult:
             case CardEnhancement.all_suits:
             case CardEnhancement.increase_timer:
-                card.addBuff(buff);
+                cards[0].addBuff(buff);
             break;
             case CardEnhancement.remove_card:
                 
             break;
             case CardEnhancement.increase_rank:
-                card.modifyRank(1);
+                cards[0].modifyRank(1);
             break;
             case CardEnhancement.decrease_rank:
-                card.modifyRank(-1);
+                cards[0].modifyRank(-1);
             break;
             case CardEnhancement.copy_card:
-                Card newCard=card.cloneCard(cardManager.cardPrefab);
+                Card newCard=cards[0].cloneCard(cardManager.cardPrefab);
                 //cardsInShop.Add(newCard);
                 cardManager.registerCard(newCard);
-                newCard.CardUI.transform.SetParent(card.CardUI.transform.parent);
-                newCard.CardUI.transform.localPosition = card.CardUI.transform.parent.localPosition+new Vector3(150f, 0, 0);
+                newCard.CardUI.transform.SetParent(cards[0].CardUI.transform.parent);
+                newCard.CardUI.transform.localPosition = cards[0].CardUI.transform.parent.localPosition+new Vector3(150f, 0, 0);
                 newCard.shrinkToRatio(cardManager.TINY_CARD_SIZE);
                 newCard.setZone(CardZone.shop);
                 cardsInShop.Add(newCard);
                 cardsToAnimate.Add(newCard);
             break;
+            case CardEnhancement.transform_heart:
+            case CardEnhancement.transform_diamond:
+            case CardEnhancement.transform_club:
+            case CardEnhancement.transform_spade:
+                    CardSuit cardSuit=CardSuit.hearts;
+                    if (buff.cardEnhancement==CardEnhancement.transform_diamond) {
+                        cardSuit=CardSuit.diamonds;
+                    } 
+                    else if (buff.cardEnhancement==CardEnhancement.transform_club) {
+                        cardSuit=CardSuit.clubs;
+                    }
+                    else if (buff.cardEnhancement==CardEnhancement.transform_spade) {
+                        cardSuit=CardSuit.spades;
+                    }
+                    foreach(Card card in cards) {
+                        card.setSuit(cardSuit);
+                    }
+
+            break;
         }
 
-        card.updateUI();
-
+        foreach(Card card in cards) {
+            card.updateUI();
+        }
+    
         float riseAndFadeAnimationTime=1f;
         float hideOtherCardAnimationTime=0.5f;
         float animationPauseAtEnd=.1f;
@@ -1064,11 +1108,23 @@ public class GameManager : MonoBehaviour {
         foreach(Card cardToAnimate in cardsToAnimate) {
             float endAlpha=((buff.cardEnhancement==CardEnhancement.remove_card) ? 0f : 1f);
             AnimationType animationType=(buff.cardEnhancement==CardEnhancement.remove_card) ? AnimationType.expandAndFade : AnimationType.riseThenMove;
-            animationManager.animateObject(animationType, cardToAnimate.CardUI, null, new Vector3(-800f,-425f,0), 1f, riseAndFadeAnimationTime, 1f, endAlpha, false, false, animationPercRising);
+            if (buff.cardEnhancement==CardEnhancement.remove_card) {
+                cardToAnimate.CardUI.GetComponent<CanvasGroup>().blocksRaycasts=false;
+            }
+            animationManager.animateObject(animationType, cardToAnimate.CardUI, null, new Vector3(-800f,-425f,0), 1f, riseAndFadeAnimationTime, 1f, endAlpha, false, buff.cardEnhancement==CardEnhancement.remove_card, animationPercRising);
+            //public void animateObject(AnimationType animationType, GameObject gameObject, GameObject? newParentObject, Vector3? targetPosition, float endScale, float totalTime, float startAlpha=1f, float endAlpha=1f, bool destroyOnFinish=true, bool cloneObject=true, float timeInRisePhase=.5f) {
+            if (buff.cardEnhancement==CardEnhancement.remove_card) {
+                cardToAnimate.CardUI.GetComponent<CanvasGroup>().alpha=0f;
+            }
+                
+        }
+
+        foreach(GameObject cardHighlighter in shopCardHighlighters) {
+            cardHighlighter.SetActive(false);
         }
 
         //Switch card animation to face down after it's finished rising
-        Invoke("clickShopPurchase_setToDiscard", riseAndFadeAnimationTime*animationSpeed);
+        Invoke("clickShopPurchase_setToDiscard", riseAndFadeAnimationTime/animationSpeed);
 
         //Fade out non-purchased cards
         /*foreach(Card thisCard in cardsInShop) {
@@ -1082,7 +1138,8 @@ public class GameManager : MonoBehaviour {
         
         audioManager.playSound(buff.soundToPlay, 1f, 0);
 
-        Invoke("clickShopPurchase_complete", (riseAndFadeAnimationTime+animationPauseAtEnd)*animationSpeed);
+        Invoke("clickShopPurchase_complete", ((riseAndFadeAnimationTime/animationSpeed)+animationPauseAtEnd));
+        Debug.Log("AnimationSpeed="+animationSpeed+" - timeToComplete="+((riseAndFadeAnimationTime/animationSpeed)+animationPauseAtEnd));
     }
 
     public void clickShopPurchase_setToDiscard() {
@@ -1092,7 +1149,8 @@ public class GameManager : MonoBehaviour {
     }
 
     public void clickShopPurchase_complete() {
-        Card card = cardsInShop[shopCardSelected];
+        Debug.Log("AnimationSpeed COMPLETE");
+        Card card = cardsInShop[shopCardSelected[0]];
         CardBuffSO buff = buffsInShop[shopBuffSelected];   
         switch (buff.cardEnhancement) { 
             case CardEnhancement.remove_card:
@@ -1109,17 +1167,27 @@ public class GameManager : MonoBehaviour {
         shopPurchaseButton.SetActive(true);
         shopSkipButton.SetActive(true);
         tutorialManager.clickedApplyUpgrade();
+        shopCardSelected.Clear();
     }
 
     public void clickedShopObject(bool isCard, int cardPicked) {
-        //Debug.Log("Clicked shop object"+isCard+" "+cardPicked);
 
+        CardBuffSO selectedBuff=null;
         if (isCard) {
-            int cardUpto=0;
-            shopCardSelected=cardPicked;
-            foreach(GameObject cardContainer in shopCardContainers) {
-                cardContainer.GetComponent<CanvasGroup>().alpha= (cardUpto==cardPicked ? 1f : .2f);
-                cardUpto++;
+            int allowedCards=1;
+            if (shopBuffSelected>-1) {
+                selectedBuff=buffsInShop[shopBuffSelected];
+                allowedCards=selectedBuff.cardsAffected;
+            }
+            if (shopCardSelected.Contains(cardPicked)) {
+                shopCardSelected.Remove(cardPicked);
+            }
+            else if (shopCardSelected.Count<allowedCards) {
+                shopCardSelected.Add(cardPicked);
+            }
+            else {
+                shopCardSelected.Clear();
+                shopCardSelected.Add(cardPicked);
             }
         }
         else {
@@ -1128,17 +1196,34 @@ public class GameManager : MonoBehaviour {
             foreach(GameObject buffContainer in shopBuffContainers) {
                 buffContainer.GetComponent<CanvasGroup>().alpha= (buffUpto==cardPicked ? 1f : .2f);
                 buffUpto++;
+                if (buffUpto==cardPicked) {
+                    selectedBuff=buffsInShop[buffUpto];
+                    if (selectedBuff.cardsAffected>shopCardSelected.Count) {
+                        shopCardSelected.Clear();
+                    }
+                }
             }
         }
 
-        if (shopCardSelected>-1 && shopBuffSelected>-1) {
-            shopPurchaseButton.GetComponent<Button>().interactable=true;
+        int cardUpto=0;
+        foreach(GameObject cardHighlighter in shopCardHighlighters) {
+            shopCardContainers[cardUpto].GetComponent<CanvasGroup>().alpha= (shopCardSelected.Contains(cardUpto) ? 1f : .7f);
+            cardHighlighter.SetActive(shopCardSelected.Contains(cardUpto));
+            cardUpto++;
         }
+
+        Debug.Log("Clicked shop object"+isCard+" "+cardPicked+" cards selected="+shopCardSelected.Count);
+
+        bool selectBtnEnabled=(shopBuffSelected>-1 && shopCardSelected.Count==buffsInShop[shopBuffSelected].cardsAffected);
+        shopPurchaseButton.GetComponent<Button>().interactable=selectBtnEnabled;
     }
 
     public void enableAllShopObjects() {
-        foreach(GameObject cardContainer in shopCardContainers) {
-            cardContainer.GetComponent<CanvasGroup>().alpha=1f;
+        int cardUpto=0;
+        foreach(GameObject cardHighlighter in shopCardHighlighters) {
+            cardHighlighter.SetActive(false);
+            shopCardContainers[cardUpto].GetComponent<CanvasGroup>().alpha=.7f;
+            cardUpto++;
         }
         foreach(GameObject buffContainer in shopBuffContainers) {
             buffContainer.GetComponent<CanvasGroup>().alpha=1f;
@@ -1170,8 +1255,8 @@ public class GameManager : MonoBehaviour {
             }
     }
 
-    public MusicMood getGameMood() {
-        MusicMood mood=MusicMood.game;
+    public MusicMood getGameMood(bool showingScore=false) {
+        MusicMood mood=showingScore ? MusicMood.scoring : MusicMood.game;
 
         if (gameState==GameState.boss) {
             return MusicMood.boss_loop;
@@ -1187,11 +1272,11 @@ public class GameManager : MonoBehaviour {
 
         foreach (Enemy enemy in enemies) {
             if (enemy.turnsUntilAttack<3) {
-                mood=MusicMood.very_intense;
+                mood= showingScore ? MusicMood.scoring_very_intense : MusicMood.very_intense;
                 break;
             }
             else if (enemy.turnsUntilAttack<5) {
-                mood=MusicMood.intense;
+                mood= showingScore ? MusicMood.scoring_intense : MusicMood.intense;
             }
         }
         return mood;
@@ -1212,7 +1297,7 @@ public class GameManager : MonoBehaviour {
     void loadHighScoresAtEndOfGame() {
         Debug.Log("iiii reset boss parent="+bossContainer.gameObject.name+" scale="+bossScale);
         bossObject.transform.localScale=bossScale;
-        StartCoroutine(highScoreManager.LoadScores(endGameScoreHolder, Color.white));
+        StartCoroutine(highScoreManager.LoadScores(endGameScoreHolder, Color.white, gameLengthManager.GameLengthSO.HIGH_SCORE_GAME_ID));
     }
 
     public void clickDeck() {

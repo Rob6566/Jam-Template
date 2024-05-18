@@ -14,6 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tracks:
   - {fileID: 8300000, guid: 38ced68267b6849fb9394bec643e98e5, type: 3}
-  musicMood: 10
+  musicMood: 12
   loopsInTrack: 10
   gameSound: 0

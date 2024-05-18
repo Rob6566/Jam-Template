@@ -13,10 +13,7 @@ MonoBehaviour:
   m_Name: 7-scoring
   m_EditorClassIdentifier: 
   tracks:
-  - {fileID: 8300000, guid: 3f7c0ad07c51f4960ba06089d72f034a, type: 3}
-  - {fileID: 8300000, guid: 7e0b995f9aa0f4c8f8a655ab83bc087b, type: 3}
-  - {fileID: 8300000, guid: 89fa136e2164f4cd5919c8a41b212d87, type: 3}
-  - {fileID: 8300000, guid: 681ee6dae8e1944d2a44fa70d62f4d9e, type: 3}
+  - {fileID: 8300000, guid: fed6357404750465db48159d98d03f1e, type: 3}
   musicMood: 5
-  loopsInTrack: 4
+  loopsInTrack: 8
   gameSound: 0

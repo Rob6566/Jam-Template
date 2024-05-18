@@ -14,4 +14,5 @@ public class GameLengthSO : ScriptableObject {
     public int BOSS_SPAWN_TURN=100;
     public int SHOP_INCREMENT_INCREASE=20;
     public int SHOP_INITIAL_INCREMENT=100;
+    public string HIGH_SCORE_GAME_ID;
 }

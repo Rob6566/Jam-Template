@@ -13,7 +13,7 @@ public enum CardRank {A, two, three, four, five, six, seven, eight, nine, ten, J
 public enum CardShader {Glow};
 public enum CardZone {deck, discard, selectable, nextup, hand1, hand2, hand3, shop, all};
 public enum HandType {high_card, pair, two_pair, three_of_a_kind, straight, flush, full_house, four_of_a_kind, straight_flush, five_of_a_kind, full_flush, five_flush};
-public enum CardEnhancement {increase_score, increase_mult, all_suits, remove_card, increase_rank, decrease_rank, copy_card, increase_timer};
+public enum CardEnhancement {increase_score, increase_mult, all_suits, remove_card, increase_rank, decrease_rank, copy_card, increase_timer, transform_heart, transform_diamond, transform_club, transform_spade};
 
 public class CardManager : MonoBehaviour {
 

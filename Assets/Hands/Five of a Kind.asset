@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   handName: Five of a Kind
   handType: 9
-  mult: 12
-  score: 100
+  mult: 10
+  score: 80

@@ -28,8 +28,7 @@ public class Card {
             }
         }
         return cardSuit;
-    } 
-    set {cardSuit=value;}}
+    }}
     public CardRank cardRank;
     float cardScore;
     public float CardScore {get {
@@ -223,6 +222,13 @@ public class Card {
         gameManager.cardManager.updateCardSprite(this);
 
         updateUI();
+    }
+
+    public void setSuit(CardSuit newSuit) {
+        cardSuit=newSuit;
+        gameManager.cardManager.updateCardSprite(this);
+        updateUI();
+
     }
 
     public int getTimerIncrease() {
